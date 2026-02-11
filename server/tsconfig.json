@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",                          /* 변환될 자바스크립트 버전 */
+    "module": "commonjs",                    /* Node.js에서 사용하는 모듈 방식 */
+    "rootDir": "./src",                      /* 실제 코드가 들어갈 폴더 (나중에 만들 거예요) */
+    "outDir": "./dist",                      /* 빌드된 파일이 저장될 폴더 */
+    "esModuleInterop": true,                 /* 외부 라이브러리(express 등)를 편하게 불러오게 함 */
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,                          /* 엄격한 타입 체크 (에러 방지) */
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],                   /* src 폴더 안의 모든 파일을 검사해라 */
+  "exclude": ["node_modules"]                /* 라이브러리 폴더는 제외해라 */
+}
