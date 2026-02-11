@@ -1,0 +1,40 @@
+// User 모델 (PRD: id, email, nickname, tier_score, created_at)
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  nickname   String
+  password   String   // 로그인 하려면 필요함 (PRD엔 없지만 필수)
+  tierScore  Int      @default(0) @map("tier_score") // 판사 등급
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  posts      Post[]
+  votes      Vote[]
+}
+
+// Post 모델 (PRD: writer_id, video_url, category, views...)
+model Post {
+  id        Int      @id @default(autoincrement())
+  videoUrl  String   @map("video_url")
+  category  String   // 'SUDDEN', 'DILEMMA' 등 Enum으로 관리 추천
+  views     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  writerId  Int      @map("writer_id")
+  writer    User     @relation(fields: [writerId], references: [id])
+  votes     Vote[]
+}
+
+// Vote 모델 (PRD: my_fault, opponent_fault...)
+model Vote {
+  id            Int      @id @default(autoincrement())
+  myFault       Int      @map("my_fault")       // 본인 과실 %
+  opponentFault Int      @map("opponent_fault") // 상대 과실 %
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  userId        Int      @map("user_id")
+  user          User     @relation(fields: [userId], references: [id])
+  postId        Int      @map("post_id")
+  post          Post     @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId]) // 한 유저는 한 게시글에 한 번만 투표 가능
+}
