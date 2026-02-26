@@ -1,6 +1,6 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth'; // 4번 단계에서 만들 파일
 
 dotenv.config(); // .env 파일 로드
