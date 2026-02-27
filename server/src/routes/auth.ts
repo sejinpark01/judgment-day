@@ -1,6 +1,7 @@
 // server/src/routes/auth.ts
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma'; // 👈 수정: 직접 생성하지 말고 불러오기 (2026.02.26)
 
 const router = Router();
@@ -45,10 +46,47 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// 로그인 API (POST /api/auth/login) - 이건 다음 단계에서 짤 거야!
-router.post('/login', async (req: Request, res: Response) => {
-    console.log('로그인 요청 데이터:', req.body);
-    res.json({ message: '로그인 요청 받음 (로직 구현 전)' });
+// 로그인 API (POST /api/auth/login) 
+router.post('/login', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { email, password } = req.body;
+
+        // 1. 필수 데이터 확인
+        if (!email || !password) {
+            return res.status(400).json({ message: '이메일과 비밀번호를 입력해주세요.' });
+        }
+
+        // 2. 유저 존재 여부 확인
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return res.status(401).json({ message: '가입되지 않은 이메일이거나 비밀번호가 틀렸습니다.' });
+        }
+
+        // 3. 비밀번호 일치 여부 확인 (평문 비밀번호 vs DB의 해시 비밀번호)
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: '가입되지 않은 이메일이거나 비밀번호가 틀렸습니다.' });
+        }
+
+        // 4. JWT 토큰 발급 (유효기간: 24시간)
+        const secretKey = process.env.JWT_SECRET || 'fallback_secret_key';
+        const token = jwt.sign(
+            { id: user.id, email: user.email, nickname: user.nickname },
+            secretKey,
+            { expiresIn: '24h' }
+        );
+
+        // 5. 성공 응답 (토큰과 유저 정보 반환)
+        res.status(200).json({
+            message: '로그인에 성공했습니다.',
+            token,
+            user: { id: user.id, email: user.email, nickname: user.nickname }
+        });
+
+    } catch (error) {
+        console.error('Login Error:', error);
+        res.status(500).json({ message: '서버 내부 오류가 발생했습니다.' });
+    }
 });
 
 export default router;
