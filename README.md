@@ -73,11 +73,12 @@
 
 ## **7. 📂 File structure -** Ver 1.1.0
 
-**주요 특징:**  **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
+**주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
 - **UI/Logic Separation**: 커스텀 훅을 통한 관심사 분리(SoC) 적용.
 - **Modern Stack Integration**: Next.js App Router와 shadcn/ui, Prisma 환경 구축 완료.
 
+```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 ├── package.json                      # [Root] concurrently 실행 스크립트 (프론트/백엔드 동시 실행)
 ├── node_modules/                     # [Root] 의존성 모듈
@@ -125,15 +126,15 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │           └── db.ts
 │
 └── server/
-├── package.json
-├── tsconfig.json
-├── .env                       # DATABASE_URL이 정의된 곳
-├── prisma/
-│   └── schema.prisma          # url = env("DATABASE_URL") 포함
-├── src/
-│   ├── index.ts               # 서버 진입점
-│   ├── lib/
-│   │   └── prisma.ts          # ✅ 새로 생성 (Prisma 인스턴스 관리)
-│   └── routes/
-│       └── auth.ts            # prisma 인스턴스를 불러와 사용
-└── node_modules/
+    ├── package.json
+    ├── tsconfig.json
+    ├── .env                       # DATABASE_URL이 정의된 곳
+    ├── prisma/
+    │   └── schema.prisma          # url = env("DATABASE_URL") 포함
+    ├── src/
+    │   ├── index.ts               # 서버 진입점
+    │   ├── lib/
+    │   │   └── prisma.ts          # ✅ 새로 생성 (Prisma 인스턴스 관리)
+    │   └── routes/
+    │       └── auth.ts            # prisma 인스턴스를 불러와 사용
+    └── node_modules/
