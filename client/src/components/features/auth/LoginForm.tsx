@@ -1,7 +1,6 @@
-// app/components/features/auth/LoginForm.tsx
 "use client";
 
-// PRD 원칙: 복잡한 로직은 훅으로 분리
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,30 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
-  const { formData, handleInputChange, handleLoginSubmit, isLoading } = useAuth();
+  const { login, isLoading, error } = useAuth();
+
+  // 1. 폼 데이터 상태를 컴포넌트 내부에서 직접 관리
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  // 2. 입력값 변경 감지 함수
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 3. 폼 제출 함수
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const isSuccess = await login(formData);
+    
+    if (isSuccess) {
+      alert('로그인 성공!');
+      window.location.href = '/'; // 메인 화면으로 이동
+    }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto bg-background text-foreground shadow-md">
@@ -47,6 +69,8 @@ export function LoginForm() {
               className="bg-muted focus-visible:ring-primary"
             />
           </div>
+          {/* 백엔드에서 보낸 에러 메시지가 있으면 화면에 표시 */}
+          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
         </CardContent>
         <CardFooter>
           <Button 

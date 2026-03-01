@@ -1,52 +1,65 @@
-// hooks/useAuth.ts
-import { useState } from "react";
+// client/src/hooks/useAuth.ts
+import { useState } from 'react';
 
-export function useAuth() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    nickname: "", // 회원가입 시 사용
-  });
+export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // 로그인 제출 핸들러
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 1. 회원가입 요청 함수
+  const signup = async (formData: any) => {
     setIsLoading(true);
-    
-    // TODO: 백엔드 로그인 API 연동 예정 (POST /api/auth/login)
-    console.log("로그인 시도:", { email: formData.email, password: formData.password });
-    
-    setTimeout(() => {
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || '회원가입에 실패했습니다.');
+      
+      return true; // 성공 시 true 반환
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
       setIsLoading(false);
-      alert("로그인 로직이 곧 연결됩니다!");
-    }, 1000);
+    }
   };
 
-  // 회원가입 제출 핸들러
-  const handleSignupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 2. 로그인 요청 함수
+  const login = async (formData: any) => {
     setIsLoading(true);
-    
-    // TODO: 백엔드 회원가입 API 연동 예정 (POST /api/auth/signup)
-    console.log("회원가입 시도:", formData);
-    
-    setTimeout(() => {
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:4000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || '로그인에 실패했습니다.');
+
+      // 🔑 핵심: 백엔드가 준 JWT 토큰을 브라우저 로컬 스토리지에 저장!
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      return true; // 성공 시 true 반환
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    } finally {
       setIsLoading(false);
-      alert("회원가입 로직이 곧 연결됩니다!");
-    }, 1000);
+    }
   };
 
-  return { 
-    formData, 
-    handleInputChange, 
-    handleLoginSubmit, 
-    handleSignupSubmit, 
-    isLoading 
+  // 3. 로그아웃 함수 (토큰 삭제)
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
-}
+
+  return { signup, login, logout, isLoading, error };
+};
