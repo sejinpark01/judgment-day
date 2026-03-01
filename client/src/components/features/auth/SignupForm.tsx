@@ -1,6 +1,6 @@
-// app/components/features/auth/SignupForm.tsx
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,29 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Label } from "@/components/ui/label";
 
 export function SignupForm() {
-  const { formData, handleInputChange, handleSignupSubmit, isLoading } = useAuth();
+  const { signup, isLoading, error } = useAuth();
+
+  // 1. 회원가입용 폼 데이터 상태 (nickname 포함)
+  const [formData, setFormData] = useState({
+    email: "",
+    nickname: "",
+    password: "",
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const isSuccess = await signup(formData);
+    
+    if (isSuccess) {
+      alert('회원가입 성공! 로그인 페이지로 이동합니다.');
+      window.location.href = '/login'; 
+    }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto bg-background text-foreground shadow-md">
@@ -59,6 +81,8 @@ export function SignupForm() {
               className="bg-muted focus-visible:ring-primary"
             />
           </div>
+          {/* 백엔드에서 보낸 에러 메시지가 있으면 화면에 표시 */}
+          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
         </CardContent>
         <CardFooter>
           <Button 
