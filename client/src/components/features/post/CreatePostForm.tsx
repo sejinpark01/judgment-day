@@ -1,4 +1,5 @@
 // app/components/features/post/CreatePostForm.tsx
+
 "use client";
 
 import { useCreatePost } from "@/hooks/useCreatePost";
@@ -7,35 +8,35 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 
 export function CreatePostForm() {
-  const { postData, handleInputChange, handleCategoryChange, handleSubmit, isLoading } = useCreatePost();
+  const { postData, handleInputChange, handleCategoryChange, handleSubmit, isLoading, error } = useCreatePost();
 
   return (
     <Card className="w-full max-w-2xl mx-auto bg-background text-foreground border-border">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">사고 영상 등록</CardTitle>
       </CardHeader>
-      
+
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
           {/* 유튜브 링크 입력 */}
           <div className="space-y-2">
             <Label htmlFor="videoUrl">유튜브 링크 (URL)</Label>
-            <Input 
-              id="videoUrl" 
+            <Input
+              id="videoUrl"
               name="videoUrl"
-              placeholder="https://www.youtube.com/watch?v=..." 
+              placeholder="https://www.youtube.com/watch?v=..."
               value={postData.videoUrl}
               onChange={handleInputChange}
-              required 
+              required
               className="bg-muted focus-visible:ring-primary"
             />
           </div>
@@ -58,7 +59,7 @@ export function CreatePostForm() {
           {/* 상세 설명 */}
           <div className="space-y-2">
             <Label htmlFor="content">상황 설명</Label>
-            <Textarea 
+            <Textarea
               id="content"
               name="content"
               placeholder="당시의 상황을 객관적으로 적어주세요."
@@ -67,8 +68,11 @@ export function CreatePostForm() {
               className="min-h-[120px] bg-muted focus-visible:ring-primary"
             />
           </div>
+
+          {/* ✅ 에러 발생 시 빨간색 경고 메시지 출력 */}
+          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
         </CardContent>
-        
+
         <CardFooter className="flex justify-end gap-4">
           <Button type="button" variant="outline">취소</Button>
           <Button type="submit" disabled={isLoading}>
