@@ -40,4 +40,53 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
     }
 });
 
+// 🚀 [추가 1 Ver- 2026.03.03] 게시글 리스트 조회 (Pagination 적용)
+router.get('/', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 6; // 한 페이지당 6개 표시
+        const skip = (page - 1) * limit;
+
+        // 최신순(내림차순)으로 데이터 가져오기
+        const posts = await prisma.post.findMany({
+            skip,
+            take: limit,
+            orderBy: { createdAt: 'desc' }, // 내림차순
+        });
+
+        const totalPosts = await prisma.post.count();
+        const totalPages = Math.ceil(totalPosts / limit);
+
+        res.status(200).json({ posts, currentPage: page, totalPages, totalPosts });
+    } catch (error) {
+        console.error('Get Posts Error:', error);
+        res.status(500).json({ message: '게시글 목록을 불러오는데 실패했습니다.' });
+    }
+});
+
+// 🚀 [신규 추가 2 Ver- 2026.03.03]] 게시글 상세 조회 API
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const post = await prisma.post.findUnique({
+            where: { id: postId },
+        });
+
+        if (!post) {
+            return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+        }
+
+        // (조회수 1 증가)
+        await prisma.post.update({
+            where: { id: postId },
+            data: { views: { increment: 1 } }
+        });
+
+        res.status(200).json(post);
+    } catch (error) {
+        console.error('Get Post Detail Error:', error);
+        res.status(500).json({ message: '상세 정보를 불러오는데 실패했습니다.' });
+    }
+});
+
 export default router;
