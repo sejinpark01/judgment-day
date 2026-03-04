@@ -5,6 +5,7 @@ import { usePostDetail } from "@/hooks/usePostDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { VideoPlayer } from "@/components/features/post/VideoPlayer"; // ✅ 방금 만든 컴포넌트 불러오기
 
 // 🚀 강력해진 유튜브 URL 추출 함수
 function extractVideoId(url: string) {
@@ -29,30 +30,32 @@ export default function PostDetailPage() {
             <Link href="/">
                 <Button variant="outline" className="mb-6">← 목록으로 돌아가기</Button>
             </Link>
-            
+
             <Card className="shadow-lg">
                 <CardHeader>
-                    <CardTitle className="text-2xl">사고 현장 분석 ({post.category})</CardTitle>
+                    <CardTitle className="text-2xl font-bold border-b pb-4">
+                        🚨 사고 현장 분석 ({post.category})
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    {/* YouTube Iframe Player */}
-                    <div className="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-inner">
-                        <iframe
-                            width="100%"
-                            height="100%"
-                            src={`https://www.youtube.com/embed/${videoId}`}
-                            title="YouTube video player"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        ></iframe>
+                <CardContent className="space-y-6 pt-4">
+
+                    {/* 🚀 우리가 만든 커스텀 비디오 플레이어 장착! */}
+                    {videoId ? (
+                        <VideoPlayer videoId={videoId} />
+                    ) : (
+                        <div className="aspect-video bg-muted flex items-center justify-center rounded-lg">
+                            <p>유효하지 않은 영상입니다.</p>
+                        </div>
+                    )}
+
+                    {/* 상황 설명 영역 */}
+                    <div className="p-6 bg-muted/50 rounded-md text-lg leading-relaxed border shadow-sm">
+                        <h3 className="font-bold mb-3 text-primary flex items-center gap-2">
+                            📝 당시 상황 설명
+                        </h3>
+                        <p className="whitespace-pre-wrap text-foreground/90">{post.content}</p>
                     </div>
-                    
-                    {/* 설명 텍스트 영역 */}
-                    <div className="p-6 bg-muted/50 rounded-md text-lg leading-relaxed border">
-                        <h3 className="font-semibold mb-2 text-primary">당시 상황 설명</h3>
-                        <p className="whitespace-pre-wrap">{post.content}</p>
-                    </div>
+
                 </CardContent>
             </Card>
         </div>
