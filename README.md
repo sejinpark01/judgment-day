@@ -71,7 +71,7 @@
 - [ ] **Phase 5:** 배포 및 최적화
 
 
-## **7. 📂 File structure -** Ver 1.2.0
+## **7. 📂 File structure -** Ver 1.3.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -90,12 +90,14 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── favicon.ico
 │       │   ├── globals.css           # 프로젝트 전역 스타일 (Tailwind CSS 적용)
 │       │   ├── layout.tsx            # 프로젝트 전체를 감싸는 뼈대 컴포넌트
-│       │   ├── page.tsx              # 메인 홈 화면 (백엔드 API 호출 테스트 진입점)
+│       │   ├── page.tsx              # ✅ 메인 홈 화면 (게시글 리스트 및 페이지네이션 연동)
 │       │   ├── login/
 │       │   │   └── page.tsx          # 로그인 페이지 (/login) 라우팅 껍데기
 │       │   ├── post/
-│       │   │   └── create/
-│       │   │       └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
+│       │   │   ├── create/
+│       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
+│       │   │   └── [id]/             # ✅ 새로 생성 (Next.js 동적 라우팅)
+│       │   │       └── page.tsx      # ✅ 게시글 상세 페이지 (iframe 영상 재생)
 │       │   └── signup/
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
 │       │
@@ -103,9 +105,9 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── features/             # 특정 도메인 로직을 위해 조립된 복합 UI 폼
 │       │   │   ├── auth/
 │       │   │   │   ├── LoginForm.tsx       #이메일/비밀번호 입력을 받는 UI
-│       │   │   │   └── SignupForm.tsx    #이메일/닉네임/비밀번호 입력을 받는 UI
+│       │   │   │   └── SignupForm.tsx      #이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
-│       │   │       └── CreatePostForm.tsx    #유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
+│       │   │       └── CreatePostForm.tsx  #유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
 │       │   └── ui/                   # shadcn/ui 기반 순수 디자인 컴포넌트 (가장 작은 레고 블록)
 │       │       ├── button.tsx
 │       │       ├── card.tsx
@@ -117,7 +119,9 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │
 │       ├── hooks/                    # UI(뷰)와 비즈니스 로직(두뇌)을 분리하는 커스텀 훅 모음
 │       │   ├── useAuth.ts            # 로그인/회원가입 상태 및 제출 이벤트 통제
-│       │   └── useCreatePost.ts      # 게시글 작성 상태 및 데이터 전송 로직
+│       │   ├── useCreatePost.ts      # 게시글 작성 상태 및 데이터 전송 로직
+│       │   ├── usePosts.ts           # ✅ 새로 생성 (메인 페이지 게시글 목록 조회 로직)
+│       │   └── usePostDetail.ts      # ✅ 새로 생성 (상세 페이지 단일 게시글 조회 로직)
 │       │
 │       ├── lib/                      # 프로젝트 전반에서 공통으로 쓰이는 유틸리티
 │       │   └── utils.ts              # Tailwind 클래스 병합 등 유틸 함수
@@ -135,9 +139,9 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │   ├── index.ts               # 서버 진입점
 │   ├── lib/
 │   │   └── prisma.ts          # Prisma 인스턴스 관리
-│   ├── middlewares/           # ✅ 새로 생성 (미들웨어 모음)
+│   ├── middlewares/           
 │   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
 │   └── routes/
 │       ├── auth.ts            # prisma 인스턴스를 불러와 사용
-│       └── post.ts            # ✅ 새로 생성 (게시글 라우터 - Passport 인증 적용)
+│       └── post.ts            # 게시글 라우터 (Passport 인증 적용 및 리스트/상세 조회 추가)
 └── node_modules/
