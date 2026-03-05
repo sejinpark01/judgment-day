@@ -71,13 +71,14 @@
 - [ ] **Phase 5:** 배포 및 최적화
 
 
-## **7. 📂 File structure -** Ver 1.4.0
+## **7. 📂 File structure -** Ver 1.5.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
 - **UI/Logic Separation**: 커스텀 훅을 통한 관심사 분리(SoC) 적용.
 - **Modern Stack Integration**: Next.js App Router와 shadcn/ui, Prisma 환경 구축 완료.
 - **Custom Player Integration**: react-youtube 기반 고정밀 프레임 제어 컨트롤러(VideoPlayer) 컴포넌트 분리 및 적용 완료.
+- **Interactive Components**: 고정밀 컨트롤러(`VideoPlayer`) 및 실시간 비율 조정(`VoteSlider`) 등 도메인 특화 UI 구현 완료.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -98,7 +99,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   ├── create/
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
 │       │   │   └── [id]/             
-│       │   │       └── page.tsx      # ✅ 게시글 상세 페이지 (커스텀 VideoPlayer 연동으로 교체)
+│       │   │       └── page.tsx      # 게시글 상세 페이지 (VideoPlayer 및 VoteSlider 연동)
 │       │   └── signup/
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
 │       │
@@ -109,7 +110,8 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
 │       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
-│       │   │       └── VideoPlayer.tsx     # ✅ 새로 생성 (0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어)
+│       │   │       ├── VideoPlayer.tsx     # 0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어
+│       │   │       └── VoteSlider.tsx      # ✅ 새로 생성 (투표 슬라이더 인터페이스)
 │       │   └── ui/                   # shadcn/ui 기반 순수 디자인 컴포넌트 (가장 작은 레고 블록)
 │       │       ├── button.tsx
 │       │       ├── card.tsx
