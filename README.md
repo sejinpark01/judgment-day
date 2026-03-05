@@ -65,18 +65,19 @@
 
 ## 6. Development Roadmap
 - [x] **Phase 1:** 초기 세팅 & DB 설계 (Current)
-- [ ] **Phase 2:** 회원가입/로그인 (Passport.js)
+- [x] **Phase 2:** 회원가입/로그인 (Passport.js)
 - [ ] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [ ] **Phase 4:** 캔버스 드로잉 & Redis 캐싱
 - [ ] **Phase 5:** 배포 및 최적화
 
 
-## **7. 📂 File structure -** Ver 1.3.0
+## **7. 📂 File structure -** Ver 1.4.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
 - **UI/Logic Separation**: 커스텀 훅을 통한 관심사 분리(SoC) 적용.
 - **Modern Stack Integration**: Next.js App Router와 shadcn/ui, Prisma 환경 구축 완료.
+- **Custom Player Integration**: react-youtube 기반 고정밀 프레임 제어 컨트롤러(VideoPlayer) 컴포넌트 분리 및 적용 완료.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -90,24 +91,25 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── favicon.ico
 │       │   ├── globals.css           # 프로젝트 전역 스타일 (Tailwind CSS 적용)
 │       │   ├── layout.tsx            # 프로젝트 전체를 감싸는 뼈대 컴포넌트
-│       │   ├── page.tsx              # ✅ 메인 홈 화면 (게시글 리스트 및 페이지네이션 연동)
+│       │   ├── page.tsx              # 메인 홈 화면 (게시글 리스트 및 페이지네이션 연동)
 │       │   ├── login/
 │       │   │   └── page.tsx          # 로그인 페이지 (/login) 라우팅 껍데기
 │       │   ├── post/
 │       │   │   ├── create/
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
-│       │   │   └── [id]/             # ✅ 새로 생성 (Next.js 동적 라우팅)
-│       │   │       └── page.tsx      # ✅ 게시글 상세 페이지 (iframe 영상 재생)
+│       │   │   └── [id]/             
+│       │   │       └── page.tsx      # ✅ 게시글 상세 페이지 (커스텀 VideoPlayer 연동으로 교체)
 │       │   └── signup/
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
 │       │
 │       ├── components/               # 재사용 가능한 UI 블록 모음
 │       │   ├── features/             # 특정 도메인 로직을 위해 조립된 복합 UI 폼
 │       │   │   ├── auth/
-│       │   │   │   ├── LoginForm.tsx       #이메일/비밀번호 입력을 받는 UI
-│       │   │   │   └── SignupForm.tsx      #이메일/닉네임/비밀번호 입력을 받는 UI
+│       │   │   │   ├── LoginForm.tsx       # 이메일/비밀번호 입력을 받는 UI
+│       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
-│       │   │       └── CreatePostForm.tsx  #유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
+│       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
+│       │   │       └── VideoPlayer.tsx     # ✅ 새로 생성 (0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어)
 │       │   └── ui/                   # shadcn/ui 기반 순수 디자인 컴포넌트 (가장 작은 레고 블록)
 │       │       ├── button.tsx
 │       │       ├── card.tsx
@@ -120,8 +122,8 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       ├── hooks/                    # UI(뷰)와 비즈니스 로직(두뇌)을 분리하는 커스텀 훅 모음
 │       │   ├── useAuth.ts            # 로그인/회원가입 상태 및 제출 이벤트 통제
 │       │   ├── useCreatePost.ts      # 게시글 작성 상태 및 데이터 전송 로직
-│       │   ├── usePosts.ts           # ✅ 새로 생성 (메인 페이지 게시글 목록 조회 로직)
-│       │   └── usePostDetail.ts      # ✅ 새로 생성 (상세 페이지 단일 게시글 조회 로직)
+│       │   ├── usePosts.ts           # 메인 페이지 게시글 목록 조회 로직
+│       │   └── usePostDetail.ts      # 상세 페이지 단일 게시글 조회 로직
 │       │
 │       ├── lib/                      # 프로젝트 전반에서 공통으로 쓰이는 유틸리티
 │       │   └── utils.ts              # Tailwind 클래스 병합 등 유틸 함수
@@ -130,18 +132,18 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │           └── db.ts
 │
 └── server/
-├── package.json
-├── tsconfig.json
-├── .env                       # DATABASE_URL이 정의된 곳
-├── prisma/
-│   └── schema.prisma          # url = env("DATABASE_URL") 포함
-├── src/
-│   ├── index.ts               # 서버 진입점
-│   ├── lib/
-│   │   └── prisma.ts          # Prisma 인스턴스 관리
-│   ├── middlewares/           
-│   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
-│   └── routes/
-│       ├── auth.ts            # prisma 인스턴스를 불러와 사용
-│       └── post.ts            # 게시글 라우터 (Passport 인증 적용 및 리스트/상세 조회 추가)
-└── node_modules/
+    ├── package.json
+    ├── tsconfig.json
+    ├── .env                       # DATABASE_URL이 정의된 곳
+    ├── prisma/
+    │   └── schema.prisma          # url = env("DATABASE_URL") 포함
+    ├── src/
+    │   ├── index.ts               # 서버 진입점
+    │   ├── lib/
+    │   │   └── prisma.ts          # Prisma 인스턴스 관리
+    │   ├── middlewares/
+    │   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
+    │   └── routes/
+    │       ├── auth.ts            # prisma 인스턴스를 불러와 사용
+    │       └── post.ts            # 게시글 라우터 (Passport 인증 적용 및 리스트/상세 조회 추가)
+    └── node_modules/
