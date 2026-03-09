@@ -26,8 +26,9 @@
 ### A. 🗳️ 실시간 투표 대시보드
 - **User Story:** "투표하자마자 다른 사람들의 의견이 그래프에 반영되는 것을 보고 싶다."
 - **Tech Spec:**
-    - `socket.emit('vote')` → 서버 집계 → `socket.broadcast.emit`
-    - Chart.js/Recharts를 활용한 실시간 데이터 시각화
+    - 데이터 무결성을 위한 REST + Socket 하이브리드 아키텍처 적용
+    - `REST API(POST)`로 안전하게 DB 저장 및 JWT 검증 → `서버 집계` → `socket.to().emit()` 브로드캐스팅
+    - CSS transition 기반 부드러운 양방향 프로그레스 바 렌더링
 
 ### B. 🎬 프레임 단위 영상 제어기
 - **User Story:** "사고 순간을 0.1초 단위로 끊어서 보며 판단하고 싶다."
@@ -66,7 +67,7 @@
 ## 6. Development Roadmap
 - [x] **Phase 1:** 초기 세팅 & DB 설계 (Current)
 - [x] **Phase 2:** 회원가입/로그인 (Passport.js)
-- [ ] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
+- [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [ ] **Phase 4:** 캔버스 드로잉 & Redis 캐싱
 - [ ] **Phase 5:** 배포 및 최적화
 
