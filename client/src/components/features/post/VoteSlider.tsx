@@ -1,58 +1,127 @@
 // client/src/components/features/post/VoteSlider.tsx
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Scale } from "lucide-react";
+import { Scale, Users } from "lucide-react";
+import { io } from "socket.io-client"; // ✅ 추가
+
+const socket = io("http://localhost:4000"); // 백엔드 소켓 연결
 
 interface VoteSliderProps {
     postId: string;
 }
 
 export function VoteSlider({ postId }: VoteSliderProps) {
-    // shadcn/ui 슬라이더는 배열 형태의 값을 사용해. 초기값은 50:50!
-    const [myFault, setMyFault] = useState<number[]>([50]); 
+    const [myFault, setMyFault] = useState<number[]>([50]);
     const opponentFault = 100 - myFault[0];
 
-    const handleVoteSubmit = () => {
-        // TODO: 다음 단계에서 Socket.io 및 DB 전송 로직이 들어갈 자리!
-        console.log(`[투표 제출] 게시글 ID: ${postId} | 내 과실: ${myFault[0]}% | 상대 과실: ${opponentFault}%`);
-        alert(`투표가 임시 제출되었습니다!\n내 과실 ${myFault[0]}% / 상대 과실 ${opponentFault}%`);
+    // 📊 실시간 통계 상태
+    const [stats, setStats] = useState({ totalVotes: 0, avgMyFault: 50, avgOpponentFault: 50 });
+    const [isLoading, setIsLoading] = useState(false);
+
+    // 🚀 컴포넌트 마운트 시 소켓 방 입장 및 초기 데이터 로드
+    useEffect(() => {
+        socket.emit("join_post", postId);
+
+        fetch(`http://localhost:4000/api/posts/${postId}/stats`)
+            .then(res => res.json())
+            .then(data => setStats(data))
+            .catch(err => console.error(err));
+
+        // 누군가 투표해서 서버가 신호를 보내면 즉시 차트 갱신!
+        socket.on("update_chart", (newStats) => {
+            setStats(newStats);
+        });
+
+        return () => {
+            socket.off("update_chart");
+        };
+    }, [postId]);
+
+    const handleVoteSubmit = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return alert("로그인이 필요한 서비스입니다.");
+
+        setIsLoading(true);
+        try {
+            const response = await fetch(`http://localhost:4000/api/posts/${postId}/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ myFault: myFault[0], opponentFault })
+            });
+
+            if (!response.ok) throw new Error("투표 제출에 실패했습니다.");
+            alert("성공적으로 판결이 반영되었습니다!");
+        } catch (error: any) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <div className="bg-card p-6 rounded-lg border shadow-sm flex flex-col items-center">
+
+            {/* 📊 실시간 집단지성 차트 영역 */}
+            <div className="w-full max-w-2xl bg-muted/30 p-4 rounded-xl mb-10 border">
+                <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold text-lg flex items-center gap-2">
+                        <Users className="w-5 h-5 text-green-600" />
+                        실시간 네티즌 판결 현황
+                    </h3>
+                    <span className="text-sm text-muted-foreground font-medium bg-muted px-2 py-1 rounded">
+                        총 {stats.totalVotes}명 참여
+                    </span>
+                </div>
+
+                <div className="h-8 w-full bg-red-500 rounded-full overflow-hidden flex relative shadow-inner">
+                    <div
+                        className="h-full bg-blue-500 transition-all duration-700 ease-out flex items-center pl-4"
+                        style={{ width: `${stats.avgMyFault}%` }}
+                    >
+                        <span className="text-white font-bold text-sm drop-shadow-md">{stats.avgMyFault}%</span>
+                    </div>
+                    <div className="absolute right-4 h-full flex items-center">
+                        <span className="text-white font-bold text-sm drop-shadow-md">{stats.avgOpponentFault}%</span>
+                    </div>
+                </div>
+                <div className="flex justify-between text-xs font-bold mt-2 px-1">
+                    <span className="text-blue-600">블랙박스 차주 과실</span>
+                    <span className="text-red-600">상대방 과실</span>
+                </div>
+            </div>
+
+            <hr className="w-full mb-8" />
+
+            {/* 기존 슬라이더 영역 */}
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                 <Scale className="w-6 h-6 text-primary" />
                 당신의 판결은 몇 대 몇입니까?
             </h3>
-            
-            {/* 비율 텍스트 표시 영역 */}
+
             <div className="flex justify-between w-full max-w-md mb-2 font-extrabold text-lg px-2">
-                <span className="text-blue-600">블랙박스 차주 <br/><span className="text-3xl">{myFault[0]}%</span></span>
-                <span className="text-red-600 text-right">상대방 <br/><span className="text-3xl">{opponentFault}%</span></span>
+                <span className="text-blue-600">블랙박스 차주 <br /><span className="text-3xl">{myFault[0]}%</span></span>
+                <span className="text-red-600 text-right">상대방 <br /><span className="text-3xl">{opponentFault}%</span></span>
             </div>
 
-            {/* 🚀 shadcn/ui 슬라이더 적용 (10 단위로 움직임) */}
             <div className="w-full max-w-md py-6">
                 <Slider
-                    defaultValue={[50]}
-                    max={100}
-                    step={10}
-                    value={myFault}
-                    onValueChange={setMyFault}
+                    defaultValue={[50]} max={100} step={10}
+                    value={myFault} onValueChange={setMyFault}
                     className="cursor-pointer"
                 />
             </div>
 
-            {/* 안내 문구 및 제출 버튼 */}
             <p className="text-sm text-muted-foreground mb-6 text-center">
-                슬라이더를 좌우로 움직여 과실 비율을 조정해주세요.
+                슬라이더를 조작한 후 아래 버튼을 눌러 당신의 판결을 실시간 차트에 더해주세요.
             </p>
-            <Button onClick={handleVoteSubmit} size="lg" className="w-full max-w-md font-bold text-lg">
-                판결 제출하기
+            <Button onClick={handleVoteSubmit} disabled={isLoading} size="lg" className="w-full max-w-md font-bold text-lg">
+                {isLoading ? "제출 중..." : "판결 제출하기"}
             </Button>
         </div>
     );
