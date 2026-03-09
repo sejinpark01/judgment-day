@@ -69,7 +69,7 @@
 - [x] **Phase 2:** 회원가입/로그인 (Passport.js)
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [ ] **Phase 4:** 캔버스 드로잉 & Redis 캐싱
-- [ ] **Phase 5:** 배포 및 최적화
+- [ ] **Phase 5:** 배포 및 기능 고도화 (과거 투표 기록 연동, 댓글 기능 추가, 최적화)
 
 
 ## **7. 📂 File structure -** Ver 1.5.0
