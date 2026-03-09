@@ -89,4 +89,57 @@ router.get('/:id', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
+// 📊 [신규 추가 3 Ver- 2026.03.09] 특정 게시글의 실시간 통계 불러오기 (GET)
+router.get('/:id/stats', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const allVotes = await prisma.vote.findMany({ where: { postId } });
+        
+        const totalVotes = allVotes.length;
+        const avgMyFault = totalVotes === 0 ? 50 : allVotes.reduce((acc, curr) => acc + curr.myFault, 0) / totalVotes;
+        const avgOpponentFault = totalVotes === 0 ? 50 : allVotes.reduce((acc, curr) => acc + curr.opponentFault, 0) / totalVotes;
+
+        res.status(200).json({ 
+            totalVotes, 
+            avgMyFault: Math.round(avgMyFault), 
+            avgOpponentFault: Math.round(avgOpponentFault) 
+        });
+    } catch (error) {
+        console.error('Get Stats Error:', error);
+        res.status(500).json({ message: '통계를 불러오는데 실패했습니다.' });
+    }
+});
+
+// 🚀 [신규 추가 4 Ver- 2026.03.09] 투표 API & Socket 실시간 브로드캐스트 (POST)
+router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const user = req.user as any;
+        const { myFault, opponentFault } = req.body;
+
+        // 1. Prisma upsert로 DB 안전하게 저장 (있으면 수정, 없으면 생성)
+        await prisma.vote.upsert({
+            where: { userId_postId: { userId: user.id, postId: postId } },
+            update: { myFault, opponentFault },
+            create: { myFault, opponentFault, userId: user.id, postId: postId }
+        });
+
+        // 2. 새로운 통계 계산
+        const allVotes = await prisma.vote.findMany({ where: { postId } });
+        const totalVotes = allVotes.length;
+        const avgMyFault = Math.round(allVotes.reduce((acc, curr) => acc + curr.myFault, 0) / totalVotes);
+        const avgOpponentFault = Math.round(allVotes.reduce((acc, curr) => acc + curr.opponentFault, 0) / totalVotes);
+        const stats = { totalVotes, avgMyFault, avgOpponentFault };
+
+        // 3. 🚨 마법의 순간: 이 게시글 방(Room)에 있는 모두에게 새 통계 전송!
+        const io = req.app.get('io');
+        io.to(`post_${postId}`).emit('update_chart', stats);
+
+        res.status(200).json({ message: '판결이 성공적으로 제출되었습니다.', stats });
+    } catch (error) {
+        console.error('Vote Error:', error);
+        res.status(500).json({ message: '투표 처리 중 오류가 발생했습니다.' });
+    }
+});
+
 export default router;
