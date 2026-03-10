@@ -11,7 +11,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
     try {
         // req.user는 Passport가  JWT 검증을 통과시킨 유저의 정보
         const user = req.user as any;
-        const { videoUrl, category, content } = req.body;
+        const { videoUrl, category, content, sketchUrl } = req.body;
 
         // 1. 필수 데이터 누락 체크
         if (!videoUrl || !category || !content) {
@@ -24,6 +24,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
                 videoUrl,
                 category,
                 content,
+                sketchUrl, // ✅ DB 저장 로직에 추가! (그림이 없으면 null로 들어감) - Ver 2026.03.10
                 writerId: user.id // JWT에서 추출한 로그인 유저의 고유 ID (핵심!)
             }
         });
@@ -94,15 +95,15 @@ router.get('/:id/stats', async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
         const allVotes = await prisma.vote.findMany({ where: { postId } });
-        
+
         const totalVotes = allVotes.length;
         const avgMyFault = totalVotes === 0 ? 50 : allVotes.reduce((acc, curr) => acc + curr.myFault, 0) / totalVotes;
         const avgOpponentFault = totalVotes === 0 ? 50 : allVotes.reduce((acc, curr) => acc + curr.opponentFault, 0) / totalVotes;
 
-        res.status(200).json({ 
-            totalVotes, 
-            avgMyFault: Math.round(avgMyFault), 
-            avgOpponentFault: Math.round(avgOpponentFault) 
+        res.status(200).json({
+            totalVotes,
+            avgMyFault: Math.round(avgMyFault),
+            avgOpponentFault: Math.round(avgOpponentFault)
         });
     } catch (error) {
         console.error('Get Stats Error:', error);
