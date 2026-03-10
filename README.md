@@ -72,14 +72,14 @@
 - [ ] **Phase 5:** 배포 및 기능 고도화 (과거 투표 기록 연동, 댓글 기능 추가, 최적화)
 
 
-## **7. 📂 File structure -** Ver 1.5.0
+## **7. 📂 File structure -** Ver 1.6.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
 - **UI/Logic Separation**: 커스텀 훅을 통한 관심사 분리(SoC) 적용.
 - **Modern Stack Integration**: Next.js App Router와 shadcn/ui, Prisma 환경 구축 완료.
 - **Custom Player Integration**: react-youtube 기반 고정밀 프레임 제어 컨트롤러(VideoPlayer) 컴포넌트 분리 및 적용 완료.
-- **Interactive Components**: 고정밀 컨트롤러(`VideoPlayer`) 및 실시간 비율 조정(`VoteSlider`) 등 도메인 특화 UI 구현 완료.
+- **Interactive Components**: 고정밀 컨트롤러(`VideoPlayer`) 및 실시간 비율 조정(`VoteSlider`), 캔버스 드로잉(`AccidentSketchbook`) 등 도메인 특화 인터페이스 구현 완료.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -110,9 +110,10 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   ├── LoginForm.tsx       # 이메일/비밀번호 입력을 받는 UI
 │       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
+│       │   │       ├── AccidentSketchbook.tsx # ✅ 새로 생성 (Canvas API 기반 드로잉 툴)
 │       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
 │       │   │       ├── VideoPlayer.tsx     # 0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어
-│       │   │       └── VoteSlider.tsx      # ✅ 새로 생성 (투표 슬라이더 인터페이스)
+│       │   │       └── VoteSlider.tsx      # 투표 슬라이더 인터페이스
 │       │   └── ui/                   # shadcn/ui 기반 순수 디자인 컴포넌트 (가장 작은 레고 블록)
 │       │       ├── button.tsx
 │       │       ├── card.tsx
