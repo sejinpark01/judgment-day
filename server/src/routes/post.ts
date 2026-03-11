@@ -1,7 +1,9 @@
 // server/src/routes/post.ts
+
 import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import prisma from '../lib/prisma';
+import redisClient from '../lib/redis'; // ✅ Redis 불러오기  Ver 2026.03.11
 
 const router = Router();
 
@@ -41,24 +43,42 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
     }
 });
 
-// 🚀 [추가 1 Ver- 2026.03.03] 게시글 리스트 조회 (Pagination 적용)
+// 🚀 [수정 Ver- 2026.03.11] 게시글 리스트 조회 (Redis Caching 적용)
 router.get('/', async (req: Request, res: Response): Promise<any> => {
     try {
         const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 6; // 한 페이지당 6개 표시
+        const limit = parseInt(req.query.limit as string) || 6;
         const skip = (page - 1) * limit;
 
-        // 최신순(내림차순)으로 데이터 가져오기
+        // 1. Redis 캐시 키 생성 (페이지 번호마다 다른 서랍장 이름 부여)
+        const cacheKey = `posts:page:${page}:limit:${limit}`;
+
+        // 2. Redis 서랍장 열어보기 (캐시 데이터 조회)
+        const cachedData = await redisClient.get(cacheKey);
+
+        if (cachedData) {
+            // 캐시가 있으면? 초고속으로 바로 응답!
+            console.log(`⚡ [Redis] 캐시 적중! (Key: ${cacheKey}) - DB 안 거침`);
+            return res.status(200).json(JSON.parse(cachedData));
+        }
+
+        // 3. 캐시가 없으면? 무거운 발걸음으로 DB(MySQL) 조회
+        console.log(`🐢 [DB] 캐시 없음. DB에서 조회합니다. (Key: ${cacheKey})`);
         const posts = await prisma.post.findMany({
             skip,
             take: limit,
-            orderBy: { createdAt: 'desc' }, // 내림차순
+            orderBy: { createdAt: 'desc' },
         });
 
         const totalPosts = await prisma.post.count();
         const totalPages = Math.ceil(totalPosts / limit);
+        const responseData = { posts, currentPage: page, totalPages, totalPosts };
 
-        res.status(200).json({ posts, currentPage: page, totalPages, totalPosts });
+        // 4. 방금 찾은 데이터를 Redis 서랍장에 60초(만료시간) 동안 넣어두기!
+        // (setEx = Set with Expiration)
+        await redisClient.setEx(cacheKey, 60, JSON.stringify(responseData));
+
+        res.status(200).json(responseData);
     } catch (error) {
         console.error('Get Posts Error:', error);
         res.status(500).json({ message: '게시글 목록을 불러오는데 실패했습니다.' });

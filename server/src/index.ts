@@ -9,6 +9,7 @@ import { Server } from 'socket.io';
 import './middlewares/passport'; // passport 전략 불러오기 (초기화)
 import authRoutes from './routes/auth'; // 인증 라우터 불러오기
 import postRoutes from './routes/post'; // 게시글 라우터 불러오기
+import redisClient from './lib/redis'; // ✅ 새로 만든 Redis 클라이언트 불러오기 - Ver 2026.03.11
 
 dotenv.config(); // .env 파일 로드
 
@@ -62,7 +63,14 @@ app.get('/api/test', (req, res) => {
   res.json({ message: '백엔드 서버 연결 성공! 🚀' });
 });
 
-// 5. 서버 실행
-httpServer.listen(PORT, () => {
+// 5. 서버 실행 (Redis 연결 추가) -Ver 2026.03.11
+httpServer.listen(PORT, async () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
+  
+  // 서버가 켜지면 Redis도 비동기로 연결 시작!
+  try {
+    await redisClient.connect();
+  } catch (error) {
+    console.error('Redis 연결 실패:', error);
+  }
 });
