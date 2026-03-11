@@ -68,11 +68,11 @@
 - [x] **Phase 1:** 초기 세팅 & DB 설계 (Current)
 - [x] **Phase 2:** 회원가입/로그인 (Passport.js)
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
-- [ ] **Phase 4:** 캔버스 드로잉 & Redis 캐싱
+- [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱
 - [ ] **Phase 5:** 배포 및 기능 고도화 (과거 투표 기록 연동, 댓글 기능 추가, 최적화)
 
 
-## **7. 📂 File structure -** Ver 1.6.0
+## **7. 📂 File structure -** Ver 1.7.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -80,6 +80,7 @@
 - **Modern Stack Integration**: Next.js App Router와 shadcn/ui, Prisma 환경 구축 완료.
 - **Custom Player Integration**: react-youtube 기반 고정밀 프레임 제어 컨트롤러(VideoPlayer) 컴포넌트 분리 및 적용 완료.
 - **Interactive Components**: 고정밀 컨트롤러(`VideoPlayer`) 및 실시간 비율 조정(`VoteSlider`), 캔버스 드로잉(`AccidentSketchbook`) 등 도메인 특화 인터페이스 구현 완료.
+- **Performance Optimization**: Redis를 활용한 인메모리 캐싱 레이어 구축으로 조회 성능 극대화.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -99,7 +100,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── post/
 │       │   │   ├── create/
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
-│       │   │   └── [id]/             
+│       │   │   └── [id]/
 │       │   │       └── page.tsx      # 게시글 상세 페이지 (VideoPlayer 및 VoteSlider 연동)
 │       │   └── signup/
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
@@ -110,18 +111,12 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   ├── LoginForm.tsx       # 이메일/비밀번호 입력을 받는 UI
 │       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
-│       │   │       ├── AccidentSketchbook.tsx # ✅ 새로 생성 (Canvas API 기반 드로잉 툴)
+│       │   │       ├── AccidentSketchbook.tsx # Canvas API 기반 드로잉 툴
 │       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
 │       │   │       ├── VideoPlayer.tsx     # 0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어
 │       │   │       └── VoteSlider.tsx      # 투표 슬라이더 인터페이스
-│       │   └── ui/                   # shadcn/ui 기반 순수 디자인 컴포넌트 (가장 작은 레고 블록)
-│       │       ├── button.tsx
-│       │       ├── card.tsx
-│       │       ├── input.tsx
-│       │       ├── label.tsx
-│       │       ├── select.tsx
-│       │       ├── slider.tsx
-│       │       └── textarea.tsx
+│       │   └── ui/                   # shadcn/ui 기반 순수 디자인 컴포넌트
+│       │       ├── button.tsx, card.tsx, input.tsx, label.tsx, select.tsx, slider.tsx, textarea.tsx
 │       │
 │       ├── hooks/                    # UI(뷰)와 비즈니스 로직(두뇌)을 분리하는 커스텀 훅 모음
 │       │   ├── useAuth.ts            # 로그인/회원가입 상태 및 제출 이벤트 통제
@@ -144,10 +139,11 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
     ├── src/
     │   ├── index.ts               # 서버 진입점
     │   ├── lib/
-    │   │   └── prisma.ts          # Prisma 인스턴스 관리
+    │   │   ├── prisma.ts          # Prisma 인스턴스 관리
+    │   │   └── redis.ts           # ✅ 새로 생성 (Redis 클라이언트 연결 모듈)
     │   ├── middlewares/
     │   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
     │   └── routes/
-    │       ├── auth.ts            # prisma 인스턴스를 불러와 사용
-    │       └── post.ts            # 게시글 라우터 (Passport 인증 적용 및 리스트/상세 조회 추가)
+    │       ├── auth.ts            # 회원가입, 로그인 라우터
+    │       └── post.ts            # 게시글 라우터 (Passport, Redis 캐싱 적용)
     └── node_modules/
