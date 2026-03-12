@@ -41,10 +41,10 @@
     - HTML5 Canvas API (`getContext('2d')`) 활용
     - 드래그 앤 드롭 차량 배치 및 `toDataURL()` 이미지 저장
 
-### D. 🔥 데이터 캐싱 & 랭킹
-- **User Story:** "인기 영상을 기다림 없이 보고 싶다."
+### D. 🔥 데이터 캐싱 (Redis)
+- **User Story:** "메인 페이지의 게시글 목록을 기다림 없이 바로 보고 싶다."
 - **Tech Spec:**
-    - Redis를 활용한 조회수 Top 10 게시글 캐싱 (TTL 10분)
+    - Redis를 활용한 메인 페이지 게시글 리스트 캐싱 (TTL 60초 적용으로 DB 부하 감소)
 
 ## 4. Coding Rules & Guidelines
 ### General Principles
@@ -68,7 +68,7 @@
 - [x] **Phase 1:** 초기 세팅 & DB 설계 (Current)
 - [x] **Phase 2:** 회원가입/로그인 (Passport.js)
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
-- [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱
+- [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
 - [ ] **Phase 5:** 배포 및 기능 고도화 (과거 투표 기록 연동, 댓글 기능 추가, 최적화)
 
 

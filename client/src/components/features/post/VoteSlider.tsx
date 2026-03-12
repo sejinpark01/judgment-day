@@ -55,9 +55,22 @@ export function VoteSlider({ postId }: VoteSliderProps) {
                 body: JSON.stringify({ myFault: myFault[0], opponentFault })
             });
 
-            if (!response.ok) throw new Error("투표 제출에 실패했습니다.");
+            // 🚨 401 에러(토큰 만료/인증 실패) 처리
+            if (response.status === 401) {
+                localStorage.removeItem('token'); // 만료된 토큰 비우기
+                throw new Error("로그인이 만료되었습니다. 다시 로그인 해주세요.");
+                // 필요하다면 여기서 로그인 페이지로 이동시키는 로직을 추가할 수도 있음..
+                // 예: window.location.href = '/login';
+            }
+
+            // 그 외의 서버 에러 처리
+            if (!response.ok) {
+                throw new Error("투표 제출에 실패했습니다. 다시 시도해 주세요.");
+            }
+
             alert("성공적으로 판결이 반영되었습니다!");
         } catch (error: any) {
+            // 위에서 throw한 Error의 메시지가 여기서 alert로 뜸.
             alert(error.message);
         } finally {
             setIsLoading(false);
