@@ -131,7 +131,7 @@ router.get('/:id/stats', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// 🚀 [신규 추가 4 Ver- 2026.03.09] 투표 API & Socket 실시간 브로드캐스트 (POST)
+// 🚀 [수정 Ver- 2026.03.12] 투표 API & Socket 실시간 브로드캐스트 & 등급(Tier) 산정 로직 적용 (POST)
 router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
@@ -145,18 +145,60 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
             create: { myFault, opponentFault, userId: user.id, postId: postId }
         });
 
-        // 2. 새로운 통계 계산
+        // 2. 새로운 통계 계산 및 Socket.io 브로드캐스트
         const allVotes = await prisma.vote.findMany({ where: { postId } });
         const totalVotes = allVotes.length;
         const avgMyFault = Math.round(allVotes.reduce((acc, curr) => acc + curr.myFault, 0) / totalVotes);
         const avgOpponentFault = Math.round(allVotes.reduce((acc, curr) => acc + curr.opponentFault, 0) / totalVotes);
         const stats = { totalVotes, avgMyFault, avgOpponentFault };
 
-        // 3. 🚨 마법의 순간: 이 게시글 방(Room)에 있는 모두에게 새 통계 전송!
         const io = req.app.get('io');
         io.to(`post_${postId}`).emit('update_chart', stats);
 
-        res.status(200).json({ message: '판결이 성공적으로 제출되었습니다.', stats });
+        // ====================================================================
+        // 🏆 3. [신규] 운전자 등급(Tier) 산정 로직 구현 🏆
+        // ====================================================================
+        
+        // 3-1. 현재 로그인한 유저가 지금까지 참여한 총 투표 횟수 조회
+        const userVoteCount = await prisma.vote.count({
+            where: { userId: user.id }
+        });
+
+        // 3-2. 횟수에 따른 타겟 등급 계산
+        let targetRole = 'BEGINNER';
+        if (userVoteCount >= 10) {
+            targetRole = 'MASTER';
+        } else if (userVoteCount >= 3) {
+            targetRole = 'EXPERT';
+        }
+
+        // 3-3. DB에서 유저의 최신 정보 가져오기 (JWT 데이터는 과거 기록일 수 있으므로)
+        const currentUser = await prisma.user.findUnique({ 
+            where: { id: user.id } 
+        });
+        
+        let isUpgraded = false;
+
+        // 3-4. 유저의 현재 등급과 타겟 등급이 다르면? 👉 승급 업데이트!
+        if (currentUser && currentUser.role !== targetRole) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { role: targetRole }
+            });
+            isUpgraded = true;
+            console.log(`🎉 [승급 알림] 유저 ID ${user.id}님이 '${targetRole}' 등급으로 승급했습니다! (총 투표: ${userVoteCount}회)`);
+        }
+
+        // 4. 최종 응답 반환 (승급 여부와 현재 횟수도 함께 프론트로 전달)
+        res.status(200).json({ 
+            message: '판결이 성공적으로 제출되었습니다.', 
+            stats,
+            tierInfo: {
+                isUpgraded,
+                newRole: targetRole,
+                totalVotes: userVoteCount
+            }
+        });
     } catch (error) {
         console.error('Vote Error:', error);
         res.status(500).json({ message: '투표 처리 중 오류가 발생했습니다.' });

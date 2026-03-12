@@ -13,7 +13,7 @@ model User {
   email      String   @unique
   nickname   String
   password   String   // 로그인 하려면 필요함 (PRD엔 없지만 필수)
-  tierScore  Int      @default(0) @map("tier_score") // 판사 등급
+  role      String   @default("BEGINNER")
   createdAt  DateTime @default(now()) @map("created_at")
   
   posts      Post[]
