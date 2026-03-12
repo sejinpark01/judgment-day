@@ -5,6 +5,9 @@ import { useState } from "react";
 import { IPost } from "@/types/db";
 
 export function useCreatePost() {
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
   const [postData, setPostData] = useState<Partial<IPost>>({
     videoUrl: "",
     category: "SUDDEN_ACCEL", // 기본값
@@ -43,7 +46,7 @@ export function useCreatePost() {
       };
 
       // 3. 백엔드 API 연동 (POST /api/posts)
-      const response = await fetch('http://localhost:4000/api/posts', {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

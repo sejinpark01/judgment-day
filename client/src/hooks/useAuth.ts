@@ -5,12 +5,14 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
   // 1. 회원가입 요청 함수
   const signup = async (formData: any) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/signup', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -18,7 +20,7 @@ export const useAuth = () => {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || '회원가입에 실패했습니다.');
-      
+
       return true; // 성공 시 true 반환
     } catch (err: any) {
       setError(err.message);
@@ -33,7 +35,7 @@ export const useAuth = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
