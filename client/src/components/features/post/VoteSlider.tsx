@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Scale, Users } from "lucide-react";
 import { io } from "socket.io-client"; // ✅ 추가
 
-const socket = io("http://localhost:4000"); // 백엔드 소켓 연결
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const socket = io(API_BASE_URL); // 백엔드 소켓 연결
 
 interface VoteSliderProps {
     postId: string;
@@ -25,7 +26,7 @@ export function VoteSlider({ postId }: VoteSliderProps) {
     useEffect(() => {
         socket.emit("join_post", postId);
 
-        fetch(`http://localhost:4000/api/posts/${postId}/stats`)
+        fetch(`${API_BASE_URL}/api/posts/${postId}/stats`)
             .then(res => res.json())
             .then(data => setStats(data))
             .catch(err => console.error(err));
@@ -46,7 +47,7 @@ export function VoteSlider({ postId }: VoteSliderProps) {
 
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:4000/api/posts/${postId}/vote`, {
+            const response = await fetch(`${API_BASE_URL}/api/posts/${postId}/vote`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -5,11 +5,13 @@ export function usePostDetail(postId: string) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
     useEffect(() => {
         if (!postId) return;
         const fetchPost = async () => {
             try {
-                const res = await fetch(`http://localhost:4000/api/posts/${postId}`);
+                const res = await fetch(`${API_BASE_URL}/api/posts/${postId}`);
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message);
                 setPost(data);

@@ -7,14 +7,16 @@ export function usePosts(initialPage = 1) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
     useEffect(() => {
         const fetchPosts = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch(`http://localhost:4000/api/posts?page=${page}&limit=6`);
+                const res = await fetch(`${API_BASE_URL}/api/posts?page=1&limit=6`);
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message);
-                
+
                 setPosts(data.posts);
                 setTotalPages(data.totalPages);
             } catch (err: any) {

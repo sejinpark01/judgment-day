@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 4000; // 백엔드는 4000번 포트 사용
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: '*',
     credentials: true,
     methods: ['GET', 'POST']
   }
@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
 
 // 1. 미들웨어 설정  & CORS 및 JSON 파싱 (프론트엔드 3000번 포트에서의 요청 허용)
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: '*',
   credentials: true,
 }));
 app.use(express.json());
