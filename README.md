@@ -69,7 +69,13 @@
 - [x] **Phase 2:** 회원가입/로그인 (Passport.js)
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
-- [ ] **Phase 5:** 배포 및 기능 고도화 (과거 투표 기록 연동, 댓글 기능 추가, 최적화)
+- [ ] **Phase 5: Polish & Deploy (최종 고도화)**
+  - UI/UX 폴리싱 (메인 홈 히어로 배너, 호버 애니메이션 추가)
+  - 마이페이지 (운전자 등급 시각화, 과거 투표 기록, 비밀번호 변경)
+  - 인증(Auth) 고도화 (OAuth 2.0 기반 카카오/구글 소셜 로그인)
+  - 보안(Security) 강화 (Redis 기반 API Rate Limiting 적용)
+  - AI 도메인 확장 (LLM을 활용한 AI 판사 1차 분석 및 조언 시스템)
+  - 배포 및 DevOps (GitHub Actions CI/CD 파이프라인 및 AWS 무중단 배포)
 
 
 ## **7. 📂 File structure -** Ver 1.7.0
