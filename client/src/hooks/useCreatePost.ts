@@ -10,7 +10,7 @@ export function useCreatePost() {
 
   const [postData, setPostData] = useState<Partial<IPost>>({
     videoUrl: "",
-    category: "SUDDEN_ACCEL", // 기본값
+    category: "NORMAL", // ✅ 기본값을 일반 사고로 변경
     content: "",
   });
   const [isLoading, setIsLoading] = useState(false);
