@@ -70,9 +70,12 @@ export function CreatePostForm() {
                 <SelectValue placeholder="사고 유형을 선택해주세요" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="SUDDEN_ACCEL">급발진 의심</SelectItem>
-                <SelectItem value="YELLOW_LIGHT">딜레마존 (황색불)</SelectItem>
-                <SelectItem value="DUI">음주운전</SelectItem>
+                <SelectItem value="NORMAL">🚗 일반 사고(차선변경 등)</SelectItem>
+                <SelectItem value="SUDDEN_ACCEL">🚨 급발진/페달오조작</SelectItem>
+                <SelectItem value="DILEMMA_ZONE">🚥 딜레마존</SelectItem>
+                <SelectItem value="JAYWALKING">🚶 무단횡단 사고</SelectItem>
+                <SelectItem value="RECKLESS_DRIVING">💢 보복/난폭운전</SelectItem>
+                <SelectItem value="SCHOOL_ZONE">🚸 스쿨존 사고</SelectItem>
               </SelectContent>
             </Select>
           </div>
