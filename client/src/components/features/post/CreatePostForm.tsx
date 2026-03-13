@@ -4,6 +4,7 @@
 
 import { useRef } from "react"; // ✅ useRef 추가
 import { useCreatePost } from "@/hooks/useCreatePost";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
@@ -17,11 +18,13 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
+
 // ✅ 우리가 만든 스케치북 컴포넌트와 타입 불러오기 - Ver 2026.03.10
 import { AccidentSketchbook, SketchbookRef } from "./AccidentSketchbook";
 
 export function CreatePostForm() {
   const { postData, handleInputChange, handleCategoryChange, handleSubmit, isLoading, error } = useCreatePost();
+  const router = useRouter();
 
   // 🚀 스케치북에 접근할 수 있는 리모컨(Ref) 생성
   const sketchbookRef = useRef<SketchbookRef>(null);
@@ -97,7 +100,7 @@ export function CreatePostForm() {
         </CardContent>
 
         <CardFooter className="flex justify-end gap-4">
-          <Button type="button" variant="outline">취소</Button>
+          <Button type="button" variant="outline" onClick={() => router.push('/')}>취소</Button>
           <Button type="submit" disabled={isLoading}>
             {isLoading ? "등록 중..." : "판결 요청하기"}
           </Button>
