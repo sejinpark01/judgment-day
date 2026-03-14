@@ -5,6 +5,7 @@ import { usePosts } from "@/hooks/usePosts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useTheme } from "next-themes"; // ✅ 다크모드 훅 추가 - Ver. 2026.03.15
 
 // 🚀 강력해진 유튜브 URL 추출 함수 (Shorts, 모바일 모두 지원)
 function extractVideoId(url: string) {
@@ -13,7 +14,7 @@ function extractVideoId(url: string) {
     return match ? match[1] : '';
 }
 
-// 🎨 3. 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수
+// 🎨 3. 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (6대 카테고리 적용) - Ver 2026.03.15
 const getCategoryBadge = (category: string) => {
     switch (category) {
         case 'SUDDEN_ACCEL':
@@ -34,6 +35,8 @@ const getCategoryBadge = (category: string) => {
 
 export default function HomePage() {
     const { posts, page, setPage, totalPages, isLoading, error } = usePosts(1);
+    // ✅ 다크모드 상태 관리 - Ver 2026.03.15
+    const { theme, setTheme } = useTheme();
 
     // 로그인 상태 관리
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -62,7 +65,18 @@ export default function HomePage() {
                 <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     ⚖️ 심판의 날
                 </h1>
+
                 <div className="flex gap-3">
+                    {/* 🚀  다크모드 토글 버튼 추가 Ver-2026.03.15 */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        className="text-2xl"
+                    >
+                        {theme === "dark" ? "🌞" : "🌙"}
+                    </Button>
+
                     {isLoggedIn ? (
                         <Button variant="outline" onClick={handleLogout} className="border-slate-300 dark:border-slate-700">로그아웃</Button>
                     ) : (
