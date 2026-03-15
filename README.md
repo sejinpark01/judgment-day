@@ -107,6 +107,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
 │       │
 │       ├── components/               # 재사용 가능한 UI 블록 모음
+│       │   ├── ThemeProvider.tsx   # 🌟 (신규) 다크모드 전역 상태 공급자
 │       │   ├── features/             # 특정 도메인 로직을 위해 조립된 복합 UI 폼
 │       │   │   ├── auth/
 │       │   │   │   ├── LoginForm.tsx       # 이메일/비밀번호 입력을 받는 UI
@@ -132,19 +133,19 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │           └── db.ts
 │
 └── server/
-    ├── package.json
-    ├── tsconfig.json
-    ├── .env                       # DATABASE_URL이 정의된 곳
-    ├── prisma/
-    │   └── schema.prisma          # url = env("DATABASE_URL") 포함
-    ├── src/
-    │   ├── index.ts               # 서버 진입점
-    │   ├── lib/
-    │   │   ├── prisma.ts          # Prisma 인스턴스 관리
-    │   │   └── redis.ts           # Redis 클라이언트 연결 모듈
-    │   ├── middlewares/
-    │   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
-    │   └── routes/
-    │       ├── auth.ts            # 회원가입, 로그인 라우터
-    │       └── post.ts            # 게시글 라우터 (Passport, Redis 캐싱 적용)
-    └── node_modules/
+├── package.json
+├── tsconfig.json
+├── .env                       # DATABASE_URL이 정의된 곳
+├── prisma/
+│   └── schema.prisma          # url = env("DATABASE_URL") 포함
+├── src/
+│   ├── index.ts               # 서버 진입점
+│   ├── lib/
+│   │   ├── prisma.ts          # Prisma 인스턴스 관리
+│   │   └── redis.ts           # Redis 클라이언트 연결 모듈
+│   ├── middlewares/
+│   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
+│   └── routes/
+│       ├── auth.ts            # 회원가입, 로그인 라우터
+│       └── post.ts            # 게시글 라우터 (Passport, Redis 캐싱 적용)
+└── node_modules/
