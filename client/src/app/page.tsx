@@ -14,7 +14,7 @@ function extractVideoId(url: string) {
     return match ? match[1] : '';
 }
 
-// 🎨 3. 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (6대 카테고리 적용) - Ver 2026.03.15
+// 🎨 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (6대 카테고리 적용) - Ver 2026.03.15
 const getCategoryBadge = (category: string) => {
     switch (category) {
         case 'SUDDEN_ACCEL':
@@ -38,11 +38,14 @@ export default function HomePage() {
     // ✅ 다크모드 상태 관리 - Ver 2026.03.15
     const { theme, setTheme } = useTheme();
 
+    const [mounted, setMounted ] = useState(false);
+
     // 로그인 상태 관리
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // 컴포넌트가 켜질 때 로컬 스토리지에 토큰이 있는지 확인
     useEffect(() => {
+        setMounted(true);
         const token = localStorage.getItem('token');
         if (token) {
             setIsLoggedIn(true);
@@ -66,26 +69,40 @@ export default function HomePage() {
                     ⚖️ 심판의 날
                 </h1>
 
-                <div className="flex gap-3">
+                <div className="flex items-center gap-3">
                     {/* 🚀  다크모드 토글 버튼 추가 Ver-2026.03.15 */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="text-2xl"
-                    >
-                        {theme === "dark" ? "🌞" : "🌙"}
-                    </Button>
+                    {mounted ? (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            className="text-xl rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                        >
+                            {theme === "dark" ? "🌞" : "🌙"}
+                        </Button>
+                    ) : (
+                        <div className="w-10 h-10" />
+                    )}
 
+                    {/* 🚀 수정된 로그인/회원가입/로그아웃 동선  - Ver 2026.03.16 */}
                     {isLoggedIn ? (
                         <Button variant="outline" onClick={handleLogout} className="border-slate-300 dark:border-slate-700">로그아웃</Button>
                     ) : (
-                        <Link href="/login">
-                            <Button variant="outline" className="border-slate-300 dark:border-slate-700">로그인</Button>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                            <Link href="/login">
+                               <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                    로그인
+                                </Button>
+                            </Link>
+                            <Link href="/signup">
+                                <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold bg-slate-50 dark:bg-slate-800">
+                                    회원가입
+                                </Button>
+                            </Link>
+                        </div>
                     )}
                     <Link href="/post/create">
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-transform hover:scale-105">
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-transform hover:scale-105 ml-2">
                             블랙박스 제보하기
                         </Button>
                     </Link>
@@ -155,7 +172,6 @@ export default function HomePage() {
 
                                 <CardHeader className="pb-2 pt-5 px-5">
                                     <div className="flex justify-between items-center mb-3">
-                                        {/* 🚀 적용된 카테고리 뱃지 */}
                                         {getCategoryBadge(post.category)}
                                         <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                                             <span className="mr-1">👁️</span> {post.views}
@@ -169,7 +185,7 @@ export default function HomePage() {
                                 <CardContent className="px-5 pb-5 mt-auto">
                                     <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800/80">
                                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                            {new Date(post.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                            {new Date(post.createdAt!).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                                         </p>
                                         <span className="text-blue-600 dark:text-blue-400 text-sm font-bold opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all flex items-center">
                                             판결하기 <span className="ml-1">→</span>

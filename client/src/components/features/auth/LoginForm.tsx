@@ -1,14 +1,18 @@
+// client/src/components/features/auth/LoginForm.tsx
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth"; 
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation"; // ✅ 라우터 임포트 -Ver 2026.03.16
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import Link from "next/link"; // ✅ Link 임포트 추가 -Ver 2026.03.16
 
 export function LoginForm() {
   const { login, isLoading, error } = useAuth();
+  const router = useRouter(); // ✅ 라우터 선언 - Ver 2026.03.16
 
   // 1. 폼 데이터 상태를 컴포넌트 내부에서 직접 관리
   const [formData, setFormData] = useState({
@@ -26,7 +30,7 @@ export function LoginForm() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const isSuccess = await login(formData);
-    
+
     if (isSuccess) {
       alert('로그인 성공!');
       window.location.href = '/'; // 메인 화면으로 이동
@@ -41,45 +45,68 @@ export function LoginForm() {
           심판의 날에 오신 것을 환영합니다.
         </CardDescription>
       </CardHeader>
-      
+
       <form onSubmit={handleLoginSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pb-8" >
           <div className="space-y-2">
             <Label htmlFor="email">이메일</Label>
-            <Input 
-              id="email" 
+            <Input
+              id="email"
               name="email"
-              type="email" 
-              placeholder="judge@example.com" 
+              type="email"
+              placeholder="judge@example.com"
               value={formData.email}
               onChange={handleInputChange}
-              required 
+              required
               className="bg-muted focus-visible:ring-primary"
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="password">비밀번호</Label>
-            <Input 
-              id="password" 
+            <Input
+              id="password"
               name="password"
-              type="password" 
+              type="password"
               value={formData.password}
               onChange={handleInputChange}
-              required 
+              required
               className="bg-muted focus-visible:ring-primary"
             />
           </div>
           {/* 백엔드에서 보낸 에러 메시지가 있으면 화면에 표시 */}
           {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
         </CardContent>
-        <CardFooter>
-          <Button 
-            type="submit" 
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isLoading}
-          >
-            {isLoading ? "로그인 중..." : "로그인"}
-          </Button>
+
+        {/* 🚀 CardFooter 수정: 회원가입 유도 링크 추가  Ver- 2026.03.16 */}
+        <CardFooter className="flex flex-col gap-4">
+
+          {/* 🚀 취소 버튼과 로그인 버튼을 가로로 나란히 배치 */}
+          <div className="flex justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-20 h-9 border-slate-300 dark:border-slate-700 font-medium text-sm"
+              onClick={() => router.push('/')}
+            >
+              취소
+            </Button>
+            <Button
+              type="submit"
+              className="w-24 h-9 bg-black text-white hover:bg-blue-700 font-bold dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 transition-colors text-sm"
+              disabled={isLoading}
+            >
+              {isLoading ? "로그인 중..." : "로그인"}
+            </Button>
+          </div>
+
+          {/* 회원가입 유도 링크 Ver - 2026.03.16 */}
+          <div className="text-sm text-center text-slate-500 dark:text-slate-400 mt-2">
+            아직 계정이 없으신가요?{" "}
+            <Link href="/signup" className="text-blue-600 hover:underline font-semibold dark:text-blue-400">
+              회원가입하기
+            </Link>
+          </div>
         </CardFooter>
       </form>
     </Card>
