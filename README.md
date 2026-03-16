@@ -46,6 +46,16 @@
 - **Tech Spec:**
     - Redis를 활용한 메인 페이지 게시글 리스트 캐싱 (TTL 60초 적용으로 DB 부하 감소)
 
+### E. 👑 운전자 등급(Tier) 시스템
+- **User Story:** "내 투표 활동이 누적될수록 전문가로 인정받고 싶다."
+- **Tech Spec:**
+    - 투표 참여도에 따른 자동 승급 로직 (BEGINNER -> EXPERT -> MASTER)
+
+### F. 🌗 다크모드 및 UI/UX 폴리싱
+- **User Story:** "밤에 사고 영상을 볼 때 눈이 부시지 않고, 서비스가 세련되었으면 좋겠다."
+- **Tech Spec:**
+    - `next-themes`와 `Tailwind CSS`을 기반으로 개발한, 전역 다크모드 및 반응형 카드 호버 애니메이션
+
 ## 4. Coding Rules & Guidelines
 ### General Principles
 - **KISS:** 과도한 추상화 지양, 명확한 코드 작성
@@ -65,14 +75,15 @@
 | **비로그인 투표 시도** | 슬라이더 조작 시 로그인 모달 호출 + 게시글 상태 유지 |
 
 ## 6. Development Roadmap
-- [x] **Phase 1:** 초기 세팅 & DB 설계 (Current)
+- [x] **Phase 1:** 초기 세팅 & DB 설계
 - [x] **Phase 2:** 회원가입/로그인 (Passport.js)
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
-- [ ] **Phase 5: Polish & Deploy** (UI 폴리싱, 마이페이지, OAuth 소셜 로그인, Redis Rate Limit, AI 판사, CI/CD 배포)
+- [x] **Phase 5: Polish & UI/UX** (히어로 배너, 카드 호버, 카테고리 뱃지, 다크모드 시스템 구축)
+- [ ] **Phase 6: Feature Enhancement & Deploy** (게시글 수정/삭제, 댓글 시스템, 투표 토글 옵션, UI 플로팅, 쇼츠 영상 최적화, 마이페이지, OAuth 소셜 로그인, 보안 Redis Rate Limit, AI 판사, CI/CD 배포)
   
 
-## **7. 📂 File structure -** Ver 1.7.1
+## **7. 📂 File structure -** Ver 1.7.2
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -81,6 +92,7 @@
 - **Custom Player Integration**: react-youtube 기반 고정밀 프레임 제어 컨트롤러(VideoPlayer) 컴포넌트 분리 및 적용 완료.
 - **Interactive Components**: 고정밀 컨트롤러(`VideoPlayer`) 및 실시간 비율 조정(`VoteSlider`), 캔버스 드로잉(`AccidentSketchbook`) 등 도메인 특화 인터페이스 구현 완료.
 - **Performance Optimization**: Redis를 활용한 인메모리 캐싱 레이어 구축으로 조회 성능 극대화.
+- **Dark Mode Integration**: next-themes를 활용한 전역 테마 관리 시스템 도입.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
