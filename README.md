@@ -19,7 +19,7 @@
 | Backend | **Node.js** (Express), **Socket.io** (WebSocket) |
 | Frontend | **TypeScript**, **Next.js** (App Router), React |
 | Styling | **Tailwind CSS**, shadcn/ui, Lucide Icons |
-| DevOps | AWS EC2 (Planned), Github Actions |
+| DevOps & Infra | **Docker (Redis Container)**, AWS EC2 (Planned), Github Actions |
 
 ## 3. Core Features (MVP)
 
@@ -73,6 +73,7 @@
 | **YouTube 영상 삭제** | Player API `onError` 감지 → 대체 이미지(Placeholder) 표시 |
 | **Socket 연결 끊김** | 클라이언트 `reconnect` 활성화 + 투표 버튼 비활성화(Disabled) |
 | **비로그인 투표 시도** | 슬라이더 조작 시 로그인 모달 호출 + 게시글 상태 유지 |
+| **외부 기기/모바일 접속(CORS) 에러** | Express CORS 미들웨어 origin 도메인 허용 및 네트워크 바인딩(0.0.0.0) 처리 |
 
 ## 6. Development Roadmap
 - [x] **Phase 1:** 초기 세팅 & DB 설계
