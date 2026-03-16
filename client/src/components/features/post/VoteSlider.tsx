@@ -1,6 +1,7 @@
 // client/src/components/features/post/VoteSlider.tsx
 "use client";
 
+import { clsx } from "clsx";
 import { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ export function VoteSlider({ postId }: VoteSliderProps) {
     const opponentFault = 100 - myFault[0];
 
     // 📊 실시간 통계 상태
-    const [stats, setStats] = useState({ totalVotes: 0, avgMyFault: 50, avgOpponentFault: 50 });
+    const [stats, setStats] = useState({ totalVotes: 0, avgMyFault: 0, avgOpponentFault: 0 });
     const [isLoading, setIsLoading] = useState(false);
 
     // 🚀 컴포넌트 마운트 시 소켓 방 입장 및 초기 데이터 로드
@@ -69,9 +70,22 @@ export function VoteSlider({ postId }: VoteSliderProps) {
                 throw new Error("투표 제출에 실패했습니다. 다시 시도해 주세요.");
             }
 
-            alert("성공적으로 판결이 반영되었습니다!");
+            // 🚀 1. 소켓을 기다리지 않고 API 응답을 통해 즉시 차트를 업데이트 (스르륵 즉시 시작!)
+            try {
+                const newData = await response.json();
+                if (newData && newData.avgMyFault !== undefined) {
+                    setStats(newData);
+                }
+            } catch (e) {
+                // 백엔드에서 JSON을 안 보내준다면 기존 소켓 로직이 알아서 처리함
+            }
+
+            // 🚀 2. 핵심 수정: 1초(1000ms) 애니메이션을 끝까지 다 감상한 뒤에(1200ms) 알림창 띄우기!
+            setTimeout(() => {
+                alert("성공적으로 판결이 반영되었습니다!");
+            }, 1200);
+
         } catch (error: any) {
-            // 위에서 throw한 Error의 메시지가 여기서 alert로 뜸.
             alert(error.message);
         } finally {
             setIsLoading(false);
@@ -83,6 +97,7 @@ export function VoteSlider({ postId }: VoteSliderProps) {
 
             {/* 📊 실시간 집단지성 차트 영역 */}
             <div className="w-full max-w-2xl bg-muted/30 p-4 rounded-xl mb-10 border">
+
                 <div className="flex justify-between items-center mb-3">
                     <h3 className="font-bold text-lg flex items-center gap-2">
                         <Users className="w-5 h-5 text-green-600" />
@@ -95,13 +110,20 @@ export function VoteSlider({ postId }: VoteSliderProps) {
 
                 <div className="h-8 w-full bg-red-500 rounded-full overflow-hidden flex relative shadow-inner">
                     <div
-                        className="h-full bg-blue-500 transition-all duration-700 ease-out flex items-center pl-4"
-                        style={{ width: `${stats.avgMyFault}%` }}
+                        className={clsx(
+                            "h-full bg-blue-500 flex items-center pl-4",
+                            "transition-[width] duration-1000 ease-in-out" // ✨ 폭(width)이 1초(1000ms) 동안 스르륵 변하도록 강제 지정
+                        )}
+                        style={{ width: `${stats.avgMyFault}%` }} // Tailwind 동적 컴파일 한계로 인한 width 예외 적용
                     >
-                        <span className="text-white font-bold text-sm drop-shadow-md">{stats.avgMyFault}%</span>
+                        <span className="text-white font-bold text-sm drop-shadow-md">
+                            {stats.avgMyFault}%
+                        </span>
                     </div>
                     <div className="absolute right-4 h-full flex items-center">
-                        <span className="text-white font-bold text-sm drop-shadow-md">{stats.avgOpponentFault}%</span>
+                        <span className="text-white font-bold text-sm drop-shadow-md">
+                            {stats.avgOpponentFault}%
+                        </span>
                     </div>
                 </div>
                 <div className="flex justify-between text-xs font-bold mt-2 px-1">
@@ -118,12 +140,12 @@ export function VoteSlider({ postId }: VoteSliderProps) {
                 당신의 판결은 몇 대 몇입니까?
             </h3>
 
-            <div className="flex justify-between w-full max-w-md mb-2 font-extrabold text-lg px-2">
+            <div className="flex justify-between w-full mb-2 font-extrabold text-lg px-2">
                 <span className="text-blue-600">블랙박스 차주 <br /><span className="text-3xl">{myFault[0]}%</span></span>
                 <span className="text-red-600 text-right">상대방 <br /><span className="text-3xl">{opponentFault}%</span></span>
             </div>
 
-            <div className="w-full max-w-md py-6">
+            <div className="w-full py-6">
                 <Slider
                     defaultValue={[50]} max={100} step={10}
                     value={myFault} onValueChange={setMyFault}
@@ -132,7 +154,7 @@ export function VoteSlider({ postId }: VoteSliderProps) {
             </div>
 
             <p className="text-sm text-muted-foreground mb-6 text-center">
-                슬라이더를 조작한 후 아래 버튼을 눌러 당신의 판결을 실시간 차트에 더해주세요.
+                슬라이더를 조작한 후 아래 버튼을 눌러 <br /> 당신의 판결을 실시간 차트에 더해주세요.
             </p>
             <Button onClick={handleVoteSubmit} disabled={isLoading} size="lg" className="w-full max-w-md font-bold text-lg">
                 {isLoading ? "제출 중..." : "판결 제출하기"}
