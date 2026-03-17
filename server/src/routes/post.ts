@@ -3,7 +3,7 @@
 import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import prisma from '../lib/prisma';
-import redisClient from '../lib/redis'; // ✅ Redis 불러오기  Ver 2026.03.11
+import redisClient from '../lib/redis'; // ✅ Redis 불러오기 - Ver 2026.03.11
 
 const router = Router();
 
@@ -44,14 +44,18 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
 });
 
 // 🚀 [수정 Ver- 2026.03.11] 게시글 리스트 조회 (Redis Caching 적용)
+// Ver-2026.03.17: 필터링, 정렬, 닉네임 추가
 router.get('/', async (req: Request, res: Response): Promise<any> => {
     try {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 6;
+        const category = req.query.category as string || 'ALL'; // 카테고리 필터
+        const sort = req.query.sort as string || 'latest'; // 정렬 필터 (latest or popular)
+
         const skip = (page - 1) * limit;
 
         // 1. Redis 캐시 키 생성 (페이지 번호마다 다른 서랍장 이름 부여)
-        const cacheKey = `posts:page:${page}:limit:${limit}`;
+        const cacheKey = `posts:page:${page}:limit:${limit}:cat:${category}:sort:${sort}`;
 
         // 2. Redis 서랍장 열어보기 (캐시 데이터 조회)
         const cachedData = await redisClient.get(cacheKey);
@@ -62,15 +66,25 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
             return res.status(200).json(JSON.parse(cachedData));
         }
 
-        // 3. 캐시가 없으면? 무거운 발걸음으로 DB(MySQL) 조회
+        // 2-1. Prisma 조건 만들기
+        const whereClause = category !== 'ALL' ? { category } : {};
+        const orderByClause = sort === 'popular' ? { views: 'desc' as const } : { createdAt: 'desc' as const };
+
+        // 3. 캐시가 없으면? DB(MySQL) 조회 (작성자 닉네임 포함!) - Ver 2026.03.17
         console.log(`🐢 [DB] 캐시 없음. DB에서 조회합니다. (Key: ${cacheKey})`);
         const posts = await prisma.post.findMany({
+            where: whereClause,
             skip,
             take: limit,
-            orderBy: { createdAt: 'desc' },
+            orderBy: orderByClause,
+            include: {
+                writer: {
+                    select: { nickname: true, role: true } // 🚀 작성자의 닉네임, role(등급) 추출
+                }
+            }
         });
 
-        const totalPosts = await prisma.post.count();
+        const totalPosts = await prisma.post.count({ where: whereClause });
         const totalPages = Math.ceil(totalPosts / limit);
         const responseData = { posts, currentPage: page, totalPages, totalPosts };
 
@@ -86,11 +100,17 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
 });
 
 // 🚀 [신규 추가 2 Ver- 2026.03.03]] 게시글 상세 조회 API
+// Ver 2026.03.17:  게시글 상세 조회 API (닉네임 포함)
 router.get('/:id', async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
         const post = await prisma.post.findUnique({
             where: { id: postId },
+            include: {
+                writer: {
+                    select: { nickname: true, role: true } // 🚀 상세 페이지에서 -> 작성자의 닉네임, role(등급) 추출
+                }
+            }
         });
 
         if (!post) {
@@ -158,7 +178,7 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
         // ====================================================================
         // 🏆 3. [신규] 운전자 등급(Tier) 산정 로직 구현 🏆
         // ====================================================================
-        
+
         // 3-1. 현재 로그인한 유저가 지금까지 참여한 총 투표 횟수 조회
         const userVoteCount = await prisma.vote.count({
             where: { userId: user.id }
@@ -173,10 +193,10 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
         }
 
         // 3-3. DB에서 유저의 최신 정보 가져오기 (JWT 데이터는 과거 기록일 수 있으므로)
-        const currentUser = await prisma.user.findUnique({ 
-            where: { id: user.id } 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: user.id }
         });
-        
+
         let isUpgraded = false;
 
         // 3-4. 유저의 현재 등급과 타겟 등급이 다르면? 👉 승급 업데이트!
@@ -190,8 +210,8 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
         }
 
         // 4. 최종 응답 반환 (승급 여부와 현재 횟수도 함께 프론트로 전달)
-        res.status(200).json({ 
-            message: '판결이 성공적으로 제출되었습니다.', 
+        res.status(200).json({
+            message: '판결이 성공적으로 제출되었습니다.',
             stats,
             tierInfo: {
                 isUpgraded,
