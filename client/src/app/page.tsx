@@ -33,12 +33,33 @@ const getCategoryBadge = (category: string) => {
     }
 };
 
+// 👑 등급(Tier)별 예쁜 색상 뱃지 헬퍼 함수 - Ver 2026.03.17
+const getRoleBadge = (role: string) => {
+    switch (role) {
+        case 'MASTER': return <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 ml-2 shadow-sm">👑 MASTER</span>;
+        case 'EXPERT': return <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800 ml-2 shadow-sm">🎖️ EXPERT</span>;
+        case 'BEGINNER':
+        default: return <span className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 ml-2">🌱 BEGINNER</span>;
+    }
+};
+
 export default function HomePage() {
-    const { posts, page, setPage, totalPages, isLoading, error } = usePosts(1);
+    // 🚀 카테고리 및 정렬 상태 추가 - Ver 2026.03.17
+    const [category, setCategory] = useState('ALL');
+    const [sort, setSort] = useState('latest');
+
+    // 🚀 usePosts에 필터 조건 전달 - Ver 2026.03.17
+    const { posts, page, setPage, totalPages, isLoading, error } = usePosts(1, category, sort);
+
+    // 필터나 정렬이 바뀌면 무조건 1페이지로 돌아가도록 설정 - Ver 2026.03.17
+    useEffect(() => {
+        setPage(1);
+    }, [category, sort, setPage]);
+
     // ✅ 다크모드 상태 관리 - Ver 2026.03.15
     const { theme, setTheme } = useTheme();
 
-    const [mounted, setMounted ] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     // 로그인 상태 관리
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -90,7 +111,7 @@ export default function HomePage() {
                     ) : (
                         <div className="flex items-center gap-2">
                             <Link href="/login">
-                               <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
                                     로그인
                                 </Button>
                             </Link>
@@ -128,11 +149,44 @@ export default function HomePage() {
                 </Link>
             </div>
 
-            {/* 서브 타이틀 */}
-            <div className="flex items-center justify-between mb-8">
+            {/* 🚀 수정된 서브 타이틀 및 필터/정렬 UI - Ver 2026.03.17 */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <h3 className="text-2xl font-bold flex items-center text-slate-900 dark:text-white tracking-tight">
                     🔥 지금 뜨거운 판결 대기소
                 </h3>
+
+                <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
+                    {/* 카테고리 필터 드롭다운 */}
+                    <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-3 py-2 text-sm font-semibold shadow-sm focus:ring-2 focus:ring-blue-500 outline-none flex-1 sm:flex-none cursor-pointer"
+                    >
+                        <option value="ALL">🌐 전체보기</option>
+                        <option value="NORMAL">🚗 일반사고</option>
+                        <option value="SUDDEN_ACCEL">🚨 급발진/오조작</option>
+                        <option value="DILEMMA_ZONE">🚥 딜레마존</option>
+                        <option value="JAYWALKING">🚶 무단횡단</option>
+                        <option value="RECKLESS_DRIVING">💢 보복/난폭</option>
+                        <option value="SCHOOL_ZONE">🚸 스쿨존</option>
+                    </select>
+
+                    {/* 최신순/인기순 정렬 토글 */}
+                    <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0">
+                        <button
+                            onClick={() => setSort('latest')}
+                            className={`px-3 py-1.5 text-sm font-bold rounded-md transition-colors ${sort === 'latest' ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                        >
+                            ✨ 최신
+                        </button>
+                        <button
+                            onClick={() => setSort('popular')}
+                            className={`px-3 py-1.5 text-sm font-bold rounded-md transition-colors ${sort === 'popular' ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                        >
+                            🔥 인기
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* 로딩 및 에러 처리 */}
@@ -182,11 +236,19 @@ export default function HomePage() {
                                     </CardTitle>
                                 </CardHeader>
 
+                                {/* 카드 컴포넌트 내부 "닉네임", "등급" 노출 - Ver 2026.03.17 */}
                                 <CardContent className="px-5 pb-5 mt-auto">
                                     <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800/80">
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                            {new Date(post.createdAt!).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </p>
+                                        <div className="flex flex-col">
+                                            {/* 🚀 작성자 닉네임 추가 */}
+                                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-0.5 flex items-center">
+                                                {post.writer?.nickname || "익명의 제보자"}
+                                                {post.writer?.role && getRoleBadge(post.writer.role)}
+                                            </span>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                                {new Date(post.createdAt!).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                            </span>
+                                        </div>
                                         <span className="text-blue-600 dark:text-blue-400 text-sm font-bold opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all flex items-center">
                                             판결하기 <span className="ml-1">→</span>
                                         </span>

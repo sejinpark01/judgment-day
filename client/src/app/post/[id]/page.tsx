@@ -26,6 +26,16 @@ const getCategoryBadge = (category: string) => {
     }
 };
 
+// 👑 등급(Tier)별 예쁜 색상 뱃지 헬퍼 함수 -Ver 2026.03.17
+const getRoleBadge = (role: string) => {
+    switch (role) {
+        case 'MASTER': return <span className="bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 ml-2 shadow-sm">👑 MASTER</span>;
+        case 'EXPERT': return <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800 ml-2 shadow-sm">🎖️ EXPERT</span>;
+        case 'BEGINNER':
+        default: return <span className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 ml-2">🌱 BEGINNER</span>;
+    }
+};
+
 
 // 🚀 강력해진 유튜브 URL 추출 함수
 function extractVideoId(url: string) {
@@ -58,7 +68,7 @@ export default function PostDetailPage() {
             </Button>
 
             {/* 🚀 3. Grid 레이아웃 적용 (lg 화면 이상일 때 2:1 비율로 나눔) */}
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 xl:gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 xl:gap-16">
 
                 {/* 👈 왼쪽: 영상 및 본문 영역 (col-span-2) */}
                 <div className="lg:col-span-2 space-y-6">
@@ -71,10 +81,19 @@ export default function PostDetailPage() {
                                 {post.content.split('\n')[0]}
                             </CardTitle>
 
-                            <div className="flex flex-wrap gap-4 mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
-                                <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> 제보자 {post.writerId}</span>
-                                <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {new Date(post.createdAt!).toLocaleDateString('ko-KR')}</span>
-                                <span className="flex items-center gap-1.5"><Eye className="w-4 h-4" /> {post.viewCount} 읽음</span>
+                            {/* 🚀 수정된 작성자(등급 포함), 날짜, 조회수 영역  Ver-206.03.17*/}
+                            <div className="flex flex-wrap items-center gap-4 mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                                <span className="flex items-center text-slate-700 dark:text-slate-300 font-bold">
+                                    <User className="w-4 h-4 mr-1.5 text-slate-500" />
+                                    {post.writer?.nickname || "익명의 제보자"}
+                                    {post.writer?.role && getRoleBadge(post.writer.role)}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Calendar className="w-4 h-4" /> {new Date(post.createdAt!).toLocaleDateString('ko-KR')}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Eye className="w-4 h-4" /> {post.views}명 읽음
+                                </span>
                             </div>
                         </CardHeader>
 

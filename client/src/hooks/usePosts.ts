@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
-export function usePosts(initialPage = 1) {
+// Ver 2026.03.17: 파라미터에 category와 sort 추가
+export function usePosts(initialPage = 1, category = 'ALL', sort = 'latest') {
     const [posts, setPosts] = useState<any[]>([]);
     const [page, setPage] = useState(initialPage);
     const [totalPages, setTotalPages] = useState(1);
@@ -13,7 +14,8 @@ export function usePosts(initialPage = 1) {
         const fetchPosts = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/posts?page=1&limit=6`);
+                // 🚀 URL 쿼리 파라미터에 category와 sort 전송 - Ver 2026.03.17
+                const res = await fetch(`${API_BASE_URL}/api/posts?page=${page}&limit=6&category=${category}&sort=${sort}`);
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message);
 
@@ -26,7 +28,7 @@ export function usePosts(initialPage = 1) {
             }
         };
         fetchPosts();
-    }, [page]); // 페이지가 바뀔 때마다 재실행!
+    }, [page, category, sort]); // 페이지가 바뀔 때마다 재실행!
 
     return { posts, page, setPage, totalPages, isLoading, error };
 }
