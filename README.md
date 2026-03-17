@@ -15,7 +15,7 @@
 ## 2. Tech Stack & Architecture
 | Category | Technology |
 |---|---|
-|Data Management| **MySQL** (Relational), **Redis** (Caching)|
+|Data Management| **MySQL** (Relational), **Prisma** (ORM), **Redis** (Caching)|
 | Backend | **Node.js** (Express), **Socket.io** (WebSocket) |
 | Frontend | **TypeScript**, **Next.js** (App Router), React |
 | Styling | **Tailwind CSS**, shadcn/ui, Lucide Icons |
@@ -81,8 +81,15 @@
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
 - [x] **Phase 5: Polish & UI/UX** (히어로 배너, 카드 호버, 카테고리 뱃지, 다크모드 시스템 구축)
-- [ ] **Phase 6: Feature Enhancement & Deploy** (게시글 수정/삭제, 댓글 시스템, 투표 토글 옵션, UI 플로팅, 쇼츠 영상 최적화, 마이페이지, OAuth 소셜 로그인, 보안 Redis Rate Limit, AI 판사, CI/CD 배포)
-  
+- [ ] **Phase 6: Feature Enhancement & Deploy**
+    - **인터페이스 최적화:** UI 플로팅(Sticky) 적용 및 쇼츠 영상 뷰 최적화
+    - **UX 고도화:** 메인 페이지 카테고리(6대 사고 유형) 필터링 및 정렬(최신/인기순) 추가
+    - **데이터 동기화:** 실시간 조회수 및 작성자 닉네임(User.nickname) 연동
+    - **커뮤니티 기능:** 게시글 수정/삭제, 댓글 시스템, 투표 토글 옵션, 마이 페이지 구현
+    - **특화 기능:** AI 판사(my-traffic-judge) 연동
+    - **인프라 및 보안:** OAuth 소셜 로그인, Redis Rate Limit 보안 강화, CI/CD 배포
+    
+    
 
 ## **7. 📂 File structure -** Ver 1.7.2
 
