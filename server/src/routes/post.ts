@@ -225,4 +225,65 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
     }
 });
 
+
+// ====================================================================
+// 🚀 [신규 추가 Ver- 2026.03.18] 게시글 수정 API (PUT)
+// ====================================================================
+router.put('/:id', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const user = req.user as any;
+        const { category, content } = req.body; // 수정할 데이터 (보통 원본 영상 URL은 수정을 막는 것이 일반적입니다)
+
+        if (!category || !content) {
+            return res.status(400).json({ message: '수정할 카테고리와 내용을 모두 입력해주세요.' });
+        }
+
+        // 1. 게시글이 존재하는지, 그리고 현재 로그인한 유저가 '작성자' 본인이 맞는지 철저히 검증! (보안 핵심)
+        const post = await prisma.post.findUnique({ where: { id: postId } });
+        if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+        if (post.writerId !== user.id) return res.status(403).json({ message: '게시글을 수정할 권한이 없습니다.' });
+
+        // 2. 통과했다면 게시글 업데이트
+        const updatedPost = await prisma.post.update({
+            where: { id: postId },
+            data: { category, content }
+        });
+
+        res.status(200).json({
+            message: '게시글이 성공적으로 수정되었습니다.',
+            post: updatedPost
+        });
+    } catch (error) {
+        console.error('Update Post Error:', error);
+        res.status(500).json({ message: '게시글 수정 중 오류가 발생했습니다.' });
+    }
+});
+
+// ====================================================================
+// 🗑️ [신규 추가 Ver- 2026.03.18] 게시글 삭제 API (DELETE)
+// ====================================================================
+router.delete('/:id', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const user = req.user as any;
+
+        // 1. 게시글 존재 및 권한 검증
+        const post = await prisma.post.findUnique({ where: { id: postId } });
+        if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+        if (post.writerId !== user.id) return res.status(403).json({ message: '게시글을 삭제할 권한이 없습니다.' });
+
+        // 2. 🚨 트랜잭션(Transaction) 처리: 게시글을 지우려면 거기에 달린 '투표(Vote)' 기록들도 같이 날려줘야 DB 에러가 안 납니다!
+        await prisma.$transaction([
+            prisma.vote.deleteMany({ where: { postId } }), // 1. 투표 기록들 먼저 싹 지우고
+            prisma.post.delete({ where: { id: postId } })  // 2. 마지막으로 게시글 본체를 지움
+        ]);
+
+        res.status(200).json({ message: '게시글이 성공적으로 삭제되었습니다.' });
+    } catch (error) {
+        console.error('Delete Post Error:', error);
+        res.status(500).json({ message: '게시글 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
 export default router;
