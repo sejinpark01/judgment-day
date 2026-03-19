@@ -233,7 +233,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
     try {
         const postId = parseInt(req.params.id as string, 10);
         const user = req.user as any;
-        const { category, content } = req.body; // 수정할 데이터 (보통 원본 영상 URL은 수정을 막는 것이 일반적입니다)
+        const { category, content } = req.body; // 수정할 데이터 (보통 원본 영상 URL은 수정을 막는 것이 일반적)
 
         if (!category || !content) {
             return res.status(400).json({ message: '수정할 카테고리와 내용을 모두 입력해주세요.' });
@@ -261,7 +261,79 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
 });
 
 // ====================================================================
-// 🗑️ [신규 추가 Ver- 2026.03.18] 게시글 삭제 API (DELETE)
+// 💬 [신규 추가 Ver-2026.03.19] 특정 게시글의 댓글 목록 조회 API (GET)
+// ====================================================================
+router.get('/:id/comments', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const comments = await prisma.comment.findMany({
+            where: { postId },
+            orderBy: { createdAt: 'desc' }, // 최신순 정렬
+            include: {
+                user: { select: { id: true, nickname: true, role: true } } // 작성자 정보 조인
+            }
+        });
+        res.status(200).json(comments);
+    } catch (error) {
+        console.error('Get Comments Error:', error);
+        res.status(500).json({ message: '댓글을 불러오는데 실패했습니다.' });
+    }
+});
+
+// ====================================================================
+// 💬 [신규 추가 Ver-2026.03.19] 댓글 작성 API (POST) - JWT 인증 필수
+// ====================================================================
+router.post('/:id/comments', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+        const user = req.user as any;
+        const { content } = req.body;
+
+        if (!content || content.trim() === '') {
+            return res.status(400).json({ message: '댓글 내용을 입력해주세요.' });
+        }
+
+        const newComment = await prisma.comment.create({
+            data: {
+                content,
+                postId,
+                userId: user.id
+            },
+            include: {
+                user: { select: { id: true, nickname: true, role: true } }
+            }
+        });
+
+        res.status(201).json({ message: '댓글이 등록되었습니다.', comment: newComment });
+    } catch (error) {
+        console.error('Create Comment Error:', error);
+        res.status(500).json({ message: '댓글 작성 중 오류가 발생했습니다.' });
+    }
+});
+
+// ====================================================================
+// 💬 [신규 추가 Ver-2026.03.19] 댓글 삭제 API (DELETE) - JWT 인증 및 권한 검사
+// ====================================================================
+router.delete('/:id/comments/:commentId', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const commentId = parseInt(req.params.commentId as string, 10);
+        const user = req.user as any;
+
+        const comment = await prisma.comment.findUnique({ where: { id: commentId } });
+        if (!comment) return res.status(404).json({ message: '댓글을 찾을 수 없습니다.' });
+        if (comment.userId !== user.id) return res.status(403).json({ message: '삭제 권한이 없습니다.' });
+
+        await prisma.comment.delete({ where: { id: commentId } });
+        res.status(200).json({ message: '댓글이 삭제되었습니다.' });
+    } catch (error) {
+        console.error('Delete Comment Error:', error);
+        res.status(500).json({ message: '댓글 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
+
+// ====================================================================
+// 🗑️ [수정 Ver- 2026.03.19] 게시글 삭제 API (DELETE)
 // ====================================================================
 router.delete('/:id', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
@@ -273,10 +345,13 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), async (r
         if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
         if (post.writerId !== user.id) return res.status(403).json({ message: '게시글을 삭제할 권한이 없습니다.' });
 
-        // 2. 🚨 트랜잭션(Transaction) 처리: 게시글을 지우려면 거기에 달린 '투표(Vote)' 기록들도 같이 날려줘야 DB 에러가 안 납니다!
+        // 2. 🚨 트랜잭션(Transaction) 처리: 게시글을 지우려면 거기에 달린 '투표(Vote)' 기록들도 같이 날려줘야 DB 에러가 안 남
+        //트랜잭션에 투표 기록뿐만 아니라 '댓글(Comment)' 삭제 로직도 추가! - Ver 2026.03.19
+
         await prisma.$transaction([
-            prisma.vote.deleteMany({ where: { postId } }), // 1. 투표 기록들 먼저 싹 지우고
-            prisma.post.delete({ where: { id: postId } })  // 2. 마지막으로 게시글 본체를 지움
+            prisma.comment.deleteMany({ where: { postId } }), // 1. 댓글 먼저 싹 지우고
+            prisma.vote.deleteMany({ where: { postId } }),    // 2. 투표 기록도 지우고
+            prisma.post.delete({ where: { id: postId } })     // 3. 마지막으로 게시글 본체 지움
         ]);
 
         res.status(200).json({ message: '게시글이 성공적으로 삭제되었습니다.' });
