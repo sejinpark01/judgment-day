@@ -91,14 +91,14 @@
     
     
 
-## **7. 📂 File structure -** Ver 1.8.0
+## **7. 📂 File structure -** Ver 1.9.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
 - **UI/Logic Separation**: 커스텀 훅을 통한 관심사 분리(SoC) 적용.
 - **Modern Stack Integration**: Next.js App Router와 shadcn/ui, Prisma 환경 구축 완료.
 - **Custom Player Integration**: react-youtube 기반 고정밀 프레임 제어 컨트롤러(VideoPlayer) 컴포넌트 분리 및 적용 완료.
-- **Interactive Components**: 고정밀 컨트롤러(`VideoPlayer`) 및 실시간 비율 조정(`VoteSlider`), 캔버스 드로잉(`AccidentSketchbook`) 등 도메인 특화 인터페이스 구현 완료.
+- **Interactive Components**: 고정밀 컨트롤러(VideoPlayer) 및 실시간 비율 조정(VoteSlider), 캔버스 드로잉(AccidentSketchbook), 사고 분석 토론(CommentSection) 등 도메인 특화 인터페이스 구현 완료.
 - **Performance Optimization**: Redis를 활용한 인메모리 캐싱 레이어 구축으로 조회 성능 극대화.
 - **Dark Mode Integration**: next-themes를 활용한 전역 테마 관리 시스템 도입.
 
@@ -123,7 +123,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
 │       │   │   └── [id]/
 │       │   │       ├── page.tsx      # 게시글 상세 페이지 (VideoPlayer 및 VoteSlider 연동)
-│       │   │       └── edit/         # 🌟 (신규) 게시글 수정 도메인
+│       │   │       └── edit/         # 게시글 수정 도메인
 │       │   │           └── page.tsx  # 게시글 수정 전용 폼 페이지 (/post/[id]/edit)
 │       │   └── signup/
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
@@ -136,6 +136,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
 │       │   │       ├── AccidentSketchbook.tsx # Canvas API 기반 드로잉 툴
+│       │   │       ├── CommentSection.tsx  # 🌟 (신규) 사고 원인 분석 댓글 컴포넌트
 │       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
 │       │   │       ├── VideoPlayer.tsx     # 0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어
 │       │   │       └── VoteSlider.tsx      # 투표 슬라이더 인터페이스
@@ -155,19 +156,19 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │           └── db.ts
 │
 └── server/
-    ├── package.json
-    ├── tsconfig.json
-    ├── .env                       # DATABASE_URL이 정의된 곳
-    ├── prisma/
-    │   └── schema.prisma          # url = env("DATABASE_URL") 포함
-    ├── src/
-    │   ├── index.ts               # 서버 진입점
-    │   ├── lib/
-    │   │   ├── prisma.ts          # Prisma 인스턴스 관리
-    │   │   └── redis.ts           # Redis 클라이언트 연결 모듈
-    │   ├── middlewares/
-    │   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
-    │   └── routes/
-    │       ├── auth.ts            # 회원가입, 로그인 라우터
-    │       └── post.ts            # 게시글 수정/삭제 기능 포함 API 라우터 (Passport, Redis 적용)
-    └── node_modules/
+├── package.json
+├── tsconfig.json
+├── .env                       # DATABASE_URL이 정의된 곳
+├── prisma/
+│   └── schema.prisma          # url = env("DATABASE_URL") 포함 (Comment 모델 추가)
+├── src/
+│   ├── index.ts               # 서버 진입점
+│   ├── lib/
+│   │   ├── prisma.ts          # Prisma 인스턴스 관리
+│   │   └── redis.ts           # Redis 클라이언트 연결 모듈
+│   ├── middlewares/
+│   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
+│   └── routes/
+│       ├── auth.ts            # 회원가입, 로그인 라우터
+│       └── post.ts            # 게시글 및 댓글(Comment) CRUD API 라우터 (Passport, Redis 적용)
+└── node_modules/
