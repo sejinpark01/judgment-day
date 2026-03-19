@@ -18,21 +18,23 @@ model User {
   
   posts      Post[]
   votes      Vote[]
+  comments   Comment[] // ✅ 신규 추가: 유저가 작성한 댓글들
 }
 
 // Post 모델 (PRD: writer_id, video_url, category, views...)
 model Post {
   id        Int      @id @default(autoincrement())
   videoUrl  String   @map("video_url")
-  category  String   // 'SUDDEN', 'DILEMMA' 등 Enum으로 관리 추천
+  category  String   
   content   String   @db.Text
-  sketchUrl  String?  @db.LongText // ✅ 새로 추가! (Base64 이미지를 담을 거대한 공간, 필수가 아니므로 ? 붙임)
+  sketchUrl  String?  @db.LongText // Base64 이미지를 담을 거대한 공간, 필수가 아니므로 ? 붙임
   views     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
 
   writerId  Int      @map("writer_id")
   writer    User     @relation(fields: [writerId], references: [id])
   votes     Vote[]
+  comments  Comment[] // ✅ 신규 추가: 게시글에 달린 댓글들
 }
 
 // Vote 모델 (PRD: my_fault, opponent_fault...)
@@ -48,4 +50,19 @@ model Vote {
   post          Post     @relation(fields: [postId], references: [id])
 
   @@unique([userId, postId]) // 한 유저는 한 게시글에 한 번만 투표 가능
+}
+
+// =========================================================
+// 💬 [신규 추가] Comment 모델 (사고 원인 분석 댓글)
+// =========================================================
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  
+  postId    Int      @map("post_id")
+  post      Post     @relation(fields: [postId], references: [id])
 }

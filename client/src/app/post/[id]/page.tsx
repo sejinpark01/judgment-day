@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { VideoPlayer } from "@/components/features/post/VideoPlayer";
-import { VoteSlider } from "@/components/features/post/VoteSlider"; // ✅ 투표 슬라이더 불러오기 (ver 2026.03.05)
-// ✅  아이콘 추가 - Ver 2026.03.16
+import { VoteSlider } from "@/components/features/post/VoteSlider"; // ✅ 투표 슬라이더 불러오기 (Ver-2026.03.05)
+import { CommentSection } from "@/components/features/post/CommentSection"; // ✅ 댓글 컴포넌트 임포트 추가 Ver-2026.03.19
 import { Pencil, ArrowLeft, Eye, Calendar, User, Edit, Trash2 } from "lucide-react"; //✅ Edit, Trash2 아이콘 추가함. Ver-2026.03.18 
 
 
@@ -131,70 +131,74 @@ export default function PostDetailPage() {
                                 )}
                             </div>
 
-                        <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-white leading-snug">
-                            {post.content.split('\n')[0]}
-                        </CardTitle>
+                            <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-white leading-snug">
+                                {post.content.split('\n')[0]}
+                            </CardTitle>
 
-                        {/* 🚀 수정된 작성자(등급 포함), 날짜, 조회수 영역  Ver-206.03.17 */}
-                        <div className="flex flex-wrap items-center gap-4 mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
-                            <span className="flex items-center text-slate-700 dark:text-slate-300 font-bold">
-                                <User className="w-4 h-4 mr-1.5 text-slate-500" />
-                                {post.writer?.nickname || "익명의 제보자"}
-                                {post.writer?.role && getRoleBadge(post.writer.role)}
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                                <Calendar className="w-4 h-4" /> {new Date(post.createdAt!).toLocaleDateString('ko-KR')}
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                                <Eye className="w-4 h-4" /> {post.views}명 읽음
-                            </span>
-                        </div>
-                    </CardHeader>
-
-                    <CardContent className="p-0">
-                        {/* 🚀  VideoPlayer에 isShorts 프롭 전달 */}
-                        <VideoPlayer videoId={videoId} isShorts={isShorts} />
-
-                        <div className="p-6 sm:p-8">
-                            <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                                📝 당시 상황 설명
-                            </h3>
-                            <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300 leading-relaxed">
-                                    {post.content}
-                                </p>
+                            {/* 🚀 수정된 작성자(등급 포함), 날짜, 조회수 영역  Ver-206.03.17 */}
+                            <div className="flex flex-wrap items-center gap-4 mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                                <span className="flex items-center text-slate-700 dark:text-slate-300 font-bold">
+                                    <User className="w-4 h-4 mr-1.5 text-slate-500" />
+                                    {post.writer?.nickname || "익명의 제보자"}
+                                    {post.writer?.role && getRoleBadge(post.writer.role)}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Calendar className="w-4 h-4" /> {new Date(post.createdAt!).toLocaleDateString('ko-KR')}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Eye className="w-4 h-4" /> {post.views}명 읽음
+                                </span>
                             </div>
+                        </CardHeader>
 
-                            {/* 스케치북 영역 */}
-                            {post.sketchUrl && (
-                                <div className="mt-8">
-                                    <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-                                        <Pencil className="w-5 h-5 text-blue-500" />
-                                        🗺️ 제보자가 그린 현장 스케치
-                                    </h3>
-                                    <div className="w-full flex justify-center bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 overflow-hidden">
-                                        <img
-                                            src={post.sketchUrl}
-                                            alt="사고 현장 스케치"
-                                            className="max-w-full h-auto rounded-lg shadow-sm"
-                                        />
-                                    </div>
+                        <CardContent className="p-0">
+                            {/* 🚀  VideoPlayer에 isShorts 프롭 전달 */}
+                            <VideoPlayer videoId={videoId} isShorts={isShorts} />
+
+                            <div className="p-6 sm:p-8">
+                                <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                                    📝 당시 상황 설명
+                                </h3>
+                                <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                    <p className="whitespace-pre-wrap text-slate-700 dark:text-slate-300 leading-relaxed">
+                                        {post.content}
+                                    </p>
                                 </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
 
-            {/* 👉 오른쪽: 투표 UI 영역 (Sticky 속성으로 고정) */}
-            <div className="lg:col-span-1 relative">
-                {/* 🚀  sticky top-24를 통해 스크롤을 내려도 따라다니게 만듦 */}
-                <div className="sticky top-24 z-10">
-                    <VoteSlider postId={postId} />
+                                {/* 스케치북 영역 */}
+                                {post.sketchUrl && (
+                                    <div className="mt-8">
+                                        <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+                                            <Pencil className="w-5 h-5 text-blue-500" />
+                                            🗺️ 제보자가 그린 현장 스케치
+                                        </h3>
+                                        <div className="w-full flex justify-center bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 overflow-hidden">
+                                            <img
+                                                src={post.sketchUrl}
+                                                alt="사고 현장 스케치"
+                                                className="max-w-full h-auto rounded-lg shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 🚀 신규 추가: 사고 원인 분석 댓글 컴포넌트 (관심사 분리 적용) - Ver 2026.03.19 */}
+                                <CommentSection postId={postId} />
+
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
-            </div>
 
-        </div>
+                {/* 👉 오른쪽: 투표 UI 영역 (Sticky 속성으로 고정) */}
+                <div className="lg:col-span-1 relative">
+                    {/* 🚀  sticky top-24를 통해 스크롤을 내려도 따라다니게 만듦 */}
+                    <div className="sticky top-24 z-10">
+                        <VoteSlider postId={postId} />
+                    </div>
+                </div>
+
+            </div>
         </div >
     );
 }
