@@ -1,3 +1,5 @@
+// client/src/app/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,7 +7,6 @@ import { usePosts } from "@/hooks/usePosts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useTheme } from "next-themes"; // ✅ 다크모드 훅 추가 - Ver. 2026.03.15
 
 // 🚀 강력해진 유튜브 URL 추출 함수 (Shorts, 모바일 모두 지원)
 function extractVideoId(url: string) {
@@ -56,79 +57,8 @@ export default function HomePage() {
         setPage(1);
     }, [category, sort, setPage]);
 
-    // ✅ 다크모드 상태 관리 - Ver 2026.03.15
-    const { theme, setTheme } = useTheme();
-
-    const [mounted, setMounted] = useState(false);
-
-    // 로그인 상태 관리
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    // 컴포넌트가 켜질 때 로컬 스토리지에 토큰이 있는지 확인
-    useEffect(() => {
-        setMounted(true);
-        const token = localStorage.getItem('token');
-        if (token) {
-            setIsLoggedIn(true);
-        }
-    }, []);
-
-    // 로그아웃 함수
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setIsLoggedIn(false);
-        alert('성공적으로 로그아웃 되었습니다.');
-    };
-
     return (
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
-
-            {/* 네비게이션 바 (헤더 영역 다듬기) */}
-            <div className="flex justify-between items-center mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
-                <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                    ⚖️ 심판의 날
-                </h1>
-
-                <div className="flex items-center gap-3">
-                    {/* 🚀  다크모드 토글 버튼 추가 Ver-2026.03.15 */}
-                    {mounted ? (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                            className="text-xl rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                        >
-                            {theme === "dark" ? "🌞" : "🌙"}
-                        </Button>
-                    ) : (
-                        <div className="w-10 h-10" />
-                    )}
-
-                    {/* 🚀 수정된 로그인/회원가입/로그아웃 동선  - Ver 2026.03.16 */}
-                    {isLoggedIn ? (
-                        <Button variant="outline" onClick={handleLogout} className="border-slate-300 dark:border-slate-700">로그아웃</Button>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <Link href="/login">
-                                <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                                    로그인
-                                </Button>
-                            </Link>
-                            <Link href="/signup">
-                                <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold bg-slate-50 dark:bg-slate-800">
-                                    회원가입
-                                </Button>
-                            </Link>
-                        </div>
-                    )}
-                    <Link href="/post/create">
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-transform hover:scale-105 ml-2">
-                            블랙박스 제보하기
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+        <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl pt-8">
 
             {/* 🚀 1. 히어로 배너 (Hero Banner) 추가 */}
             <div className="w-full bg-slate-900 dark:bg-slate-900/40 text-white py-16 px-6 mb-16 rounded-3xl shadow-2xl text-center flex flex-col items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950 relative overflow-hidden border border-slate-800">

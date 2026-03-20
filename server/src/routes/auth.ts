@@ -1,8 +1,10 @@
 // server/src/routes/auth.ts
+
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma'; // 👈 수정: 직접 생성하지 말고 불러오기 (2026.02.26)
+import passport from 'passport';
 
 const router = Router();
 
@@ -86,6 +88,77 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
     } catch (error) {
         console.error('Login Error:', error);
         res.status(500).json({ message: '서버 내부 오류가 발생했습니다.' });
+    }
+});
+
+// ====================================================================
+// 👤 [추가] 내 프로필 및 투표 기록 조회 API (GET /api/auth/me) - Ver 2026.03.20
+// ====================================================================
+router.get('/me', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const user = req.user as any;
+
+        // 유저 정보와 투표 기록(게시글 정보 조인)을 함께 가져옴
+        const userProfile = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+                id: true,
+                email: true,
+                nickname: true,
+                role: true,
+                createdAt: true,
+                votes: {
+                    include: {
+                        post: {
+                            select: { id: true, category: true, content: true, views: true, createdAt: true }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' } // 최신 투표순 정렬
+                }
+            }
+        });
+
+        if (!userProfile) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' });
+
+        res.status(200).json(userProfile);
+    } catch (error) {
+        console.error('Get Profile Error:', error);
+        res.status(500).json({ message: '프로필 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// ====================================================================
+// 🔒 [추가] 비밀번호 변경 API (PUT /api/auth/password) - Ver 2026.03.20
+// ====================================================================
+router.put('/password', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+    try {
+        const user = req.user as any;
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ message: '모든 필드를 입력해주세요.' });
+        }
+
+        const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
+        if (!existingUser) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' });
+
+        // 1. 현재 비밀번호 검증
+        const isMatch = await bcrypt.compare(currentPassword, existingUser.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: '현재 비밀번호가 일치하지 않습니다.' });
+        }
+
+        // 2. 새 비밀번호 암호화 및 업데이트
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashedPassword }
+        });
+
+        res.status(200).json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+    } catch (error) {
+        console.error('Change Password Error:', error);
+        res.status(500).json({ message: '비밀번호 변경 중 오류가 발생했습니다.' });
     }
 });
 
