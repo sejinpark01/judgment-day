@@ -23,7 +23,8 @@ import {
 import { AccidentSketchbook, SketchbookRef } from "./AccidentSketchbook";
 
 export function CreatePostForm() {
-  const { postData, handleInputChange, handleCategoryChange, handleSubmit, isLoading, error } = useCreatePost();
+  //구조 분해 할당
+  const { postData, handleInputChange, handleCategoryChange, handleToggleChange, handleSubmit, isLoading, error } = useCreatePost();
   const router = useRouter();
 
   // 🚀 스케치북에 접근할 수 있는 리모컨(Ref) 생성
@@ -78,6 +79,23 @@ export function CreatePostForm() {
                 <SelectItem value="SCHOOL_ZONE">🚸 스쿨존 사고</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 🚀 신규 추가: 투표 활성화/비활성화 토글 UI - Ver 2026.03.20 */}
+          <div className="flex items-center justify-between space-y-2 p-4 border border-border rounded-lg bg-muted/30">
+            <div className="space-y-0.5">
+              <Label className="text-base font-bold text-foreground">투표 활성화</Label>
+              <p className="text-sm text-muted-foreground">다른 사용자들이 과실 비율을 투표할 수 있도록 허용합니다. (단순 제보 시 해제)</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={postData.isVoteEnabled} 
+                onChange={handleToggleChange} 
+              />
+              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            </label>
           </div>
 
           {/* 상세 설명 */}

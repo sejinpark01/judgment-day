@@ -11,7 +11,7 @@ import Link from "next/link";
 import { VideoPlayer } from "@/components/features/post/VideoPlayer";
 import { VoteSlider } from "@/components/features/post/VoteSlider"; // ✅ 투표 슬라이더 불러오기 (Ver-2026.03.05)
 import { CommentSection } from "@/components/features/post/CommentSection"; // ✅ 댓글 컴포넌트 임포트 추가 Ver-2026.03.19
-import { Pencil, ArrowLeft, Eye, Calendar, User, Edit, Trash2 } from "lucide-react"; //✅ Edit, Trash2 아이콘 추가함. Ver-2026.03.18 
+import { Pencil, ArrowLeft, Eye, Calendar, User, Edit, Trash2, Scale } from "lucide-react"; //✅ Edit, Trash2 아이콘 추가함. Ver-2026.03.18 
 
 
 // 카테고리 뱃지 함수
@@ -104,7 +104,7 @@ export default function PostDetailPage() {
         // 🚀  max-w-4xl에서 max-w-6xl로 확장하여 양옆 공간 확보
         <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
 
-            <Button variant="ghost" onClick={() => router.back()} className="mb-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors -ml-4">
+            <Button variant="ghost" onClick={() => router.push('/')} className="mb-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors -ml-4">
                 <ArrowLeft className="w-5 h-5 mr-2" /> 돌아가기
             </Button>
 
@@ -194,7 +194,20 @@ export default function PostDetailPage() {
                 <div className="lg:col-span-1 relative">
                     {/* 🚀  sticky top-24를 통해 스크롤을 내려도 따라다니게 만듦 */}
                     <div className="sticky top-24 z-10">
-                        <VoteSlider postId={postId} />
+                        {/* 🚀 신규: 투표 활성화 여부에 따른 조건부 렌더링 Ver- 2026.03.20 */}
+                        {post.isVoteEnabled ? (
+                            <VoteSlider postId={postId} />
+                        ) : (
+                            <Card className="shadow-sm border-0 ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-8 text-center flex flex-col items-center justify-center min-h-[300px]">
+                                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                    <Scale className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                                </div>
+                                <CardTitle className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">투표가 비활성화된 게시글입니다.</CardTitle>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    제보자의 요청으로 과실 비율 투표를 진행하지 않고 <br />단순 상황 공유 목적으로만 제공됩니다.
+                                </p>
+                            </Card>
+                        )}
                     </div>
                 </div>
 

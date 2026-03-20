@@ -13,7 +13,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
     try {
         // req.user는 Passport가  JWT 검증을 통과시킨 유저의 정보
         const user = req.user as any;
-        const { videoUrl, category, content, sketchUrl } = req.body;
+        const { videoUrl, category, content, sketchUrl, isVoteEnabled } = req.body;
 
         // 1. 필수 데이터 누락 체크
         if (!videoUrl || !category || !content) {
@@ -27,6 +27,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
                 category,
                 content,
                 sketchUrl, // ✅ DB 저장 로직에 추가! (그림이 없으면 null로 들어감) - Ver 2026.03.10
+                isVoteEnabled: isVoteEnabled !== undefined ? isVoteEnabled : true, // ✅ DB 저장 로직 추가 - Ver 2026.03.19
                 writerId: user.id // JWT에서 추출한 로그인 유저의 고유 ID (핵심!)
             }
         });
@@ -233,7 +234,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
     try {
         const postId = parseInt(req.params.id as string, 10);
         const user = req.user as any;
-        const { category, content } = req.body; // 수정할 데이터 (보통 원본 영상 URL은 수정을 막는 것이 일반적)
+        const { category, content, isVoteEnabled } = req.body; // 수정할 데이터 (보통 원본 영상 URL은 수정을 막는 것이 일반적)
 
         if (!category || !content) {
             return res.status(400).json({ message: '수정할 카테고리와 내용을 모두 입력해주세요.' });
@@ -247,7 +248,8 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
         // 2. 통과했다면 게시글 업데이트
         const updatedPost = await prisma.post.update({
             where: { id: postId },
-            data: { category, content }
+            // ✅ isVoteEnabled 업데이트 로직 추가 - Ver 2026.03.19
+            data: { category, content, isVoteEnabled: isVoteEnabled !== undefined ? isVoteEnabled : true }
         });
 
         res.status(200).json({

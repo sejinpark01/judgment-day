@@ -28,6 +28,7 @@ model Post {
   category  String   
   content   String   @db.Text
   sketchUrl  String?  @db.LongText // Base64 이미지를 담을 거대한 공간, 필수가 아니므로 ? 붙임
+  isVoteEnabled Boolean @default(true) @map("is_vote_enabled") // ✅ 신규 추가: 투표 활성화 여부
   views     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
 
