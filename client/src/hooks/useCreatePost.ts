@@ -12,6 +12,7 @@ export function useCreatePost() {
     videoUrl: "",
     category: "NORMAL", // ✅ 기본값을 일반 사고로 변경
     content: "",
+    isVoteEnabled: true,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null); // ✅ 통신 에러를 담을 상태 추가
@@ -24,6 +25,11 @@ export function useCreatePost() {
   const handleCategoryChange = (value: string) => {
     // 타입 캐스팅으로 안전하게 상태 업데이트
     setPostData((prev: Partial<IPost>) => ({ ...prev, category: value as IPost['category'] }));
+  };
+
+  // 🚀 신규 추가: Toggle 스위치 전용 핸들러 - Ver 2026.03.20
+  const handleToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPostData((prev) => ({ ...prev, isVoteEnabled: e.target.checked }));
   };
 
   // 🚀 파라미터에 sketchUrl 추가 (선택적)
@@ -52,7 +58,7 @@ export function useCreatePost() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}` // ✅ 경비원에게 보여줄 신분증 제출!
         },
-        body: JSON.stringify(payload), // ✅ 합쳐진 payload 전송
+        body: JSON.stringify(payload), // ✅ 합쳐진 payload 전송 (isVoteEnabled 자동 포함)
       });
 
       // 🚀 [추가된 로직] 401 에러일 경우 JSON 파싱 전에 미리 컷! -Ver 2026.03.10
@@ -86,5 +92,5 @@ export function useCreatePost() {
     }
   };
 
-  return { postData, handleInputChange, handleCategoryChange, handleSubmit, isLoading, error };
+  return { postData, handleInputChange, handleCategoryChange, handleToggleChange, handleSubmit, isLoading, error };
 }
