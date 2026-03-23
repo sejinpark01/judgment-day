@@ -8,17 +8,20 @@
 - **Goal:** Next.js, Node.js, Socket.io를 활용하여 실시간 상호작용이 가능한 투표 플랫폼 구축
 - **Target User:** 객관적인 과실 비율 판단을 원하는 운전자 및 방어 운전 학습자
 - **Key Value:**
-    - 📊 **Data-Driven:** 직관적인 파이 차트와 통계 데이터 제공
-    - ⚡ **Interactive:** Socket.io 기반 실시간 투표 반영
-    - 🎨 **User Experience:** Tailwind CSS + shadcn/ui 기반 다크모드 UI
+    - 📊 **Data-Driven & Visualization:** 직관적인 파이 차트 제공 및 유저 투표 편차 데이터를 활용한 '운전 MBTI' 시각화
+    - ⚡ **Interactive & Real-time:** Socket.io 기반 실시간 투표 반영 및 1:1 타겟팅 실시간 알림(Notification) 시스템
+    - 🎨 **User Experience:** Tailwind CSS + shadcn/ui 기반 다크모드 UI 및 관심사 분리(SoC) 패턴 적용
 
 ## 2. Tech Stack & Architecture
 | Category | Technology |
 |---|---|
 |Data Management| **MySQL** (Relational), **Prisma** (ORM), **Redis** (Caching)|
-| Backend | **Node.js** (Express), **Socket.io** (WebSocket) |
-| Frontend | **TypeScript**, **Next.js** (App Router), React |
+| Backend | **Node.js** (Express), **TypeScript**, **Socket.io** (WebSocket & Real-time), http |
+| Frontend | **Next.js** (App Router), **TypeScript**, React(React Hooks), **Recharts/Chart.js** (Data Visualization), Fetch API |
+| Auth | **Passport.js** (JWT Strategy), bcrypt, CORS |
 | Styling | **Tailwind CSS**, shadcn/ui, Lucide Icons |
+| Core APIs | YouTube Iframe API (seekTo, getCurrentTime, playVideo), HTML5 Canvas API (getContext('2d')) |
+| Libraries | react-youtube, lucide-react , next-themes |
 | DevOps & Infra | **Docker (Redis Container)**, AWS EC2 (Planned), Github Actions |
 
 ## 3. Core Features (MVP)
@@ -56,6 +59,29 @@
 - **Tech Spec:**
     - `next-themes`와 `Tailwind CSS`을 기반으로 개발한, 전역 다크모드 및 반응형 카드 호버 애니메이션
 
+### G: 📊 나의 판결 성향 분석 (운전 MBTI)    
+- **User Story:** "나는 단순히 투표 기록을 보는 것을 넘어, 남들과 비교했을 때 내 과실 판단 성향이 얼마나 객관적인지(혹은 편향되었는지) 분석된 시각화 데이터를 보고 싶다." 
+- **Tech Spec:**
+ - **Backend (Prisma & Node.js):**
+    - 유저가 투표를 제출할 때마다 해당 게시글의 현재 평균 과실 비율과 유저의 투표 비율 차이를 계산하여 `UserDeviation` 테이블(또는 `User` 테이블의 누적 필드)에 업데이트.
+    - Prisma의 `aggregate` 쿼리를 활용해 특정 유저의 평균 편차값 추출 API 구현.
+ - **Frontend (Next.js & Chart.js / Recharts):**
+    - 마이페이지 로드 시 API를 호출하여 편차 데이터를 수신.
+    - 수신된 데이터를 기반으로 방사형 차트(Radar Chart) 또는 양방향 막대그래프(Bar Chart) 렌더링.
+    - 도출된 MBTI 유형에 따른 재미있는 칭호 배지(Badge) UI 제공.
+
+### H: 🔔 내 활동 실시간 알림 (Notification)  
+- **User Story:** "나는 내가 올린 블랙박스 영상에 누군가 새로운 투표를 하거나 원인 분석 댓글을 달았을 때, 새로고침 없이 즉각적으로 알림을 받고 싶다."
+- **Tech Spec:**
+ - **Backend (Socket.io & Redis & Prisma):**
+    - 유저가 로그인하면 자신의 `user_id`를 기반으로 한 고유 Socket Room(예: `room_user_123`)에 `join`.
+    - 타 유저가 투표(`Vote`)하거나 댓글(`Comment`)을 생성(POST)하는 순간, 게시글 작성자의 고유 Room으로 `emit('new_notification')` 전송.
+    - 사용자가 오프라인일 때 발생한 알림을 유실하지 않기 위해, 알림 내역을 DB(`Notification` 테이블)에 저장하거나 Redis List 자료구조를 활용해 임시 캐싱.
+ - **Frontend (Next.js & Tailwind CSS):**
+    - 전역 레이아웃(`Navbar.tsx`)에서 커스텀 훅(`useSocketNotification`)을 통해 알림 이벤트 리스닝.
+    - 알림 수신 시 종소리(🔔) 아이콘에 Red Dot(배지) 활성화 및 토스트(Toast) 팝업 제공.
+    - 알림 클릭 시 해당 게시글 상세 페이지로 라우팅 처리.
+
 ## 4. Coding Rules & Guidelines
 ### General Principles
 - **KISS:** 과도한 추상화 지양, 명확한 코드 작성
@@ -86,6 +112,8 @@
     - **UX 고도화:** 메인 페이지 카테고리(6대 사고 유형) 필터링 및 정렬(최신/인기순) 추가
     - **데이터 동기화:** 실시간 조회수 및 작성자 닉네임(User.nickname) 연동
     - **커뮤니티 기능:** 게시글 수정/삭제, 댓글 시스템, 투표 토글 옵션, 마이 페이지 구현
+    - **나의 판결 성향 분석 (운전 MBTI):** 사용자 투표 데이터를 대중 평균 투표율과 비교·분석하여 방사형 차트(Radar Chart)로 시각화하고 맞춤형 칭호 부여.
+    - **1:1 실시간 활동 알림:** Socket.io 고유 Room을 활용한 타겟팅 통신으로, 내 게시글의 새로운 반응(투표/댓글)을 새로고침 없이 즉각적으로 수신.
     - **특화 기능:** AI 판사(my-traffic-judge) 연동
     - **인프라 및 보안:** OAuth 소셜 로그인, Redis Rate Limit 보안 강화, CI/CD 배포
     
