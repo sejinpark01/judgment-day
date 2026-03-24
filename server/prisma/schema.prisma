@@ -18,7 +18,8 @@ model User {
   
   posts      Post[]
   votes      Vote[]
-  comments   Comment[] // ✅ 신규 추가: 유저가 작성한 댓글들
+  comments   Comment[] // 유저가 작성한 댓글들
+  notifications Notification[] // ✅ 알림 관계 추가
 }
 
 // Post 모델 (PRD: writer_id, video_url, category, views...)
@@ -27,7 +28,7 @@ model Post {
   videoUrl  String   @map("video_url")
   category  String   
   content   String   @db.Text
-  sketchUrl  String?  @db.LongText // Base64 이미지를 담을 거대한 공간, 필수가 아니므로 ? 붙임
+  sketchUrl String? @db.LongText // Base64 이미지를 담을 거대한 공간, 필수가 아니므로 ? 붙임
   isVoteEnabled Boolean @default(true) @map("is_vote_enabled") // ✅ 신규 추가: 투표 활성화 여부
   views     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
@@ -54,7 +55,7 @@ model Vote {
 }
 
 // =========================================================
-// 💬 [신규 추가] Comment 모델 (사고 원인 분석 댓글)
+// 💬 Comment 모델 (사고 원인 분석 댓글)
 // =========================================================
 model Comment {
   id        Int      @id @default(autoincrement())
@@ -66,4 +67,19 @@ model Comment {
   
   postId    Int      @map("post_id")
   post      Post     @relation(fields: [postId], references: [id])
+}
+
+// =========================================================
+// Notification 모델 (알림)
+// =========================================================
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id") // 알림 수신자 (게시글 작성자)
+  postId    Int?     @map("post_id") // 라우팅할 게시글 ID
+  type      String   // 'VOTE' | 'COMMENT'
+  message   String   // 알림 내용
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

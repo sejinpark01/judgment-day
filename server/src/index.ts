@@ -9,7 +9,9 @@ import { Server } from 'socket.io';
 import './middlewares/passport'; // passport 전략 불러오기 (초기화)
 import authRoutes from './routes/auth'; // 인증 라우터 불러오기
 import postRoutes from './routes/post'; // 게시글 라우터 불러오기
+import notificationRoutes from './routes/notification'; // 🚀 신규: 알림 라우터 불러오기 - Ver 2026.03.24
 import redisClient from './lib/redis'; // ✅ 새로 만든 Redis 클라이언트 불러오기 - Ver 2026.03.11
+
 
 dotenv.config(); // .env 파일 로드
 
@@ -39,6 +41,12 @@ io.on('connection', (socket) => {
     console.log(`유저가 게시글 ${postId}번 방에 입장했습니다.`);
   });
 
+  // 🚀 [신규] 유저가 로그인하면 자신의 고유 Room에 1:1 입장 - Ver 2026.03.24
+  socket.on('join_user_room', (userId: number) => {
+    socket.join(`room_user_${userId}`);
+    console.log(`👤 유저 ${userId}번이 개인 알림 방(room_user_${userId})에 입장했습니다.`);
+  })
+
   socket.on('disconnect', () => {
     console.log('🔌 클라이언트 접속 종료:', socket.id);
   });
@@ -57,6 +65,7 @@ app.use(passport.initialize());
 // 3. API 라우터 연결 (주소 뚫어주기)
 app.use('/api/auth', authRoutes);   // 회원가입, 로그인
 app.use('/api/posts', postRoutes);  // 게시글 작성 (내부에 JWT 검사 로직 있음)
+app.use('/api/notifications', notificationRoutes); // 🚀 신규: 알림 API 연결 - Ver 2026.03.24
 
 // 4. 테스트용 API 라우트
 app.get('/api/test', (req, res) => {
@@ -66,7 +75,7 @@ app.get('/api/test', (req, res) => {
 // 5. 서버 실행 (Redis 연결 추가) -Ver 2026.03.11
 httpServer.listen(PORT, async () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
-  
+
   // 서버가 켜지면 Redis도 비동기로 연결 시작!
   try {
     await redisClient.connect();

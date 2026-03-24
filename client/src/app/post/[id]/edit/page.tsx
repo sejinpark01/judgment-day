@@ -146,7 +146,7 @@ export default function EditPostPage() {
                                 id="content"
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
-                                placeholder="당시 상황을 최대한 객관적이고 상세하게 수정해주세요."
+                                placeholder={"첫 줄은 게시글의 '제목'으로 표시됩니다.\n이후 당시의 상황을 객관적이고 상세하게 적어주세요."}
                                 required
                                 className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 min-h-[250px] resize-y"
                             />
