@@ -52,7 +52,6 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
         const limit = parseInt(req.query.limit as string) || 6;
         const category = req.query.category as string || 'ALL'; // 카테고리 필터
         const sort = req.query.sort as string || 'latest'; // 정렬 필터 (latest or popular)
-
         const skip = (page - 1) * limit;
 
         // 1. Redis 캐시 키 생성 (페이지 번호마다 다른 서랍장 이름 부여)
@@ -100,7 +99,7 @@ router.get('/', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// 🚀 [신규 추가 2 Ver- 2026.03.03]] 게시글 상세 조회 API
+// 🚀 [Ver- 2026.03.03] 게시글 상세 조회 API
 // Ver 2026.03.17:  게시글 상세 조회 API (닉네임 포함)
 router.get('/:id', async (req: Request, res: Response): Promise<any> => {
     try {
@@ -123,7 +122,6 @@ router.get('/:id', async (req: Request, res: Response): Promise<any> => {
             where: { id: postId },
             data: { views: { increment: 1 } }
         });
-
         res.status(200).json(post);
     } catch (error) {
         console.error('Get Post Detail Error:', error);
@@ -131,12 +129,11 @@ router.get('/:id', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// 📊 [신규 추가 3 Ver- 2026.03.09] 특정 게시글의 실시간 통계 불러오기 (GET)
+// 📊 [Ver- 2026.03.09] 특정 게시글의 실시간 통계 불러오기 (GET)
 router.get('/:id/stats', async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
         const allVotes = await prisma.vote.findMany({ where: { postId } });
-
         const totalVotes = allVotes.length;
         const avgMyFault = totalVotes === 0 ? 50 : allVotes.reduce((acc, curr) => acc + curr.myFault, 0) / totalVotes;
         const avgOpponentFault = totalVotes === 0 ? 50 : allVotes.reduce((acc, curr) => acc + curr.opponentFault, 0) / totalVotes;
@@ -152,7 +149,7 @@ router.get('/:id/stats', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// 🚀 [수정 Ver- 2026.03.12] 투표 API & Socket 실시간 브로드캐스트 & 등급(Tier) 산정 로직 적용 (POST)
+// 🚀 [수정 Ver- 2026.03.24] 투표 API & Socket 실시간 브로드캐스트 & 등급(Tier) 산정 로직 적용 (POST) & 🔔 알림(Notification) 전송
 router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
@@ -177,7 +174,7 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
         io.to(`post_${postId}`).emit('update_chart', stats);
 
         // ====================================================================
-        // 🏆 3. [신규] 운전자 등급(Tier) 산정 로직 구현 🏆
+        // 🏆 3. 운전자 등급(Tier) 산정 로직 구현 🏆
         // ====================================================================
 
         // 3-1. 현재 로그인한 유저가 지금까지 참여한 총 투표 횟수 조회
@@ -210,6 +207,19 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
             console.log(`🎉 [승급 알림] 유저 ID ${user.id}님이 '${targetRole}' 등급으로 승급했습니다! (총 투표: ${userVoteCount}회)`);
         }
 
+        // ====================================================================
+        // 🔔 3-5. [신규] 원작자에게 1:1 실시간 알림 쏘기 - Ver 2026.03.24
+        // ====================================================================
+        const post = await prisma.post.findUnique({ where: { id: postId } });
+        if (post && post.writerId !== user.id) { // 자기가 자기 글에 투표한 게 아닐 때만
+            const message = `회원님의 사고 영상에 새로운 판결이 등록되었습니다.`;
+            const notification = await prisma.notification.create({
+                data: { userId: post.writerId, postId: post.id, type: 'VOTE', message }
+            });
+            // 해당 작성자의 개인 Room으로 1:1 날림
+            io.to(`room_user_${post.writerId}`).emit('new_notification', notification);
+        }
+
         // 4. 최종 응답 반환 (승급 여부와 현재 횟수도 함께 프론트로 전달)
         res.status(200).json({
             message: '판결이 성공적으로 제출되었습니다.',
@@ -226,9 +236,8 @@ router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async
     }
 });
 
-
 // ====================================================================
-// 🚀 [신규 추가 Ver- 2026.03.18] 게시글 수정 API (PUT)
+// 🚀 [Ver- 2026.03.18] 게시글 수정 API (PUT)
 // ====================================================================
 router.put('/:id', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
@@ -263,7 +272,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
 });
 
 // ====================================================================
-// 💬 [신규 추가 Ver-2026.03.19] 특정 게시글의 댓글 목록 조회 API (GET)
+// 💬 [Ver-2026.03.19] 특정 게시글의 댓글 목록 조회 API (GET)
 // ====================================================================
 router.get('/:id/comments', async (req: Request, res: Response): Promise<any> => {
     try {
@@ -283,7 +292,7 @@ router.get('/:id/comments', async (req: Request, res: Response): Promise<any> =>
 });
 
 // ====================================================================
-// 💬 [신규 추가 Ver-2026.03.19] 댓글 작성 API (POST) - JWT 인증 필수
+// 💬 [Ver-2026.03.24] 댓글 작성 API (POST) & 🔔 알림(Notification) 전송 - JWT 인증 필수
 // ====================================================================
 router.post('/:id/comments', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
@@ -306,6 +315,19 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), a
             }
         });
 
+        // ====================================================================
+        // 🔔 [신규] 원작자에게 1:1 실시간 알림 보내기 - Ver 2026.03.24
+        // ====================================================================
+        const post = await prisma.post.findUnique({ where: { id: postId } });
+        if (post && post.writerId !== user.id) { 
+            const message = `회원님의 게시글에 새로운 원인 분석 댓글이 달렸습니다.`;
+            const notification = await prisma.notification.create({
+                data: { userId: post.writerId, postId: post.id, type: 'COMMENT', message }
+            });
+            const io = req.app.get('io');
+            io.to(`room_user_${post.writerId}`).emit('new_notification', notification);
+        }
+
         res.status(201).json({ message: '댓글이 등록되었습니다.', comment: newComment });
     } catch (error) {
         console.error('Create Comment Error:', error);
@@ -320,7 +342,6 @@ router.delete('/:id/comments/:commentId', passport.authenticate('jwt', { session
     try {
         const commentId = parseInt(req.params.commentId as string, 10);
         const user = req.user as any;
-
         const comment = await prisma.comment.findUnique({ where: { id: commentId } });
         if (!comment) return res.status(404).json({ message: '댓글을 찾을 수 없습니다.' });
         if (comment.userId !== user.id) return res.status(403).json({ message: '삭제 권한이 없습니다.' });
