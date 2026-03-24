@@ -88,11 +88,11 @@ export function CreatePostForm() {
               <p className="text-sm text-muted-foreground">다른 사용자들이 과실 비율을 투표할 수 있도록 허용합니다. (단순 제보 시 해제)</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={postData.isVoteEnabled} 
-                onChange={handleToggleChange} 
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={postData.isVoteEnabled}
+                onChange={handleToggleChange}
               />
               <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
             </label>
@@ -104,7 +104,7 @@ export function CreatePostForm() {
             <Textarea
               id="content"
               name="content"
-              placeholder="당시의 상황을 객관적으로 적어주세요."
+              placeholder={"첫 줄은 게시글의 '제목'으로 표시됩니다.\n이후 당시의 상황을 객관적이고 상세하게 적어주세요."}
               value={postData.content}
               onChange={handleInputChange}
               className="min-h-[120px] bg-muted focus-visible:ring-primary"

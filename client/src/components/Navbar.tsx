@@ -20,9 +20,7 @@ export function Navbar() {
     useEffect(() => {
         setMounted(true);
         const token = localStorage.getItem('token');
-        if (token) {
-            setIsLoggedIn(true);
-        }
+        if (token) setIsLoggedIn(true);
     }, []);
 
     // 로그아웃 함수
@@ -46,32 +44,19 @@ export function Navbar() {
                         ⚖️ 심판의 날
                     </h1>
                 </Link>
-                
-                <div className="flex items-center gap-3">
-                    {/* 🚀  다크모드 토글 버튼 추가 Ver-2026.03.15 */}
-                    {mounted ? (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                            className="text-xl rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                        >
-                            {theme === "dark" ? "🌞" : "🌙"}
-                        </Button>
-                    ) : (
-                        <div className="w-10 h-10" />
-                    )}
 
-                    {/* 🚀 수정된 로그인/회원가입/로그아웃 동선  - Ver 2026.03.16 */}
+                <div className="flex items-center gap-3">
+                     {/* 🚀 로그인/회원가입/로그아웃 동선  - Ver 2026.03.16 */}
                     {isLoggedIn ? (
                         <div className="flex items-center gap-2">
-                            {/* 🚀 신규 추가: 마이페이지 버튼 */}
+
+                            {/*  마이페이지 버튼 */}
                             <Link href="/mypage">
                                 <Button variant="ghost" className="font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
                                     <UserCircle className="w-5 h-5 mr-1.5" /> 마이페이지
                                 </Button>
                             </Link>
-                            <Button variant="outline" onClick={handleLogout} className="border-slate-300 dark:border-slate-700">
+                            <Button variant="outline" onClick={handleLogout} className="border-slate-300 dark:border-slate-700 font-semibold hidden sm:flex">
                                 로그아웃
                             </Button>
                         </div>
@@ -83,17 +68,34 @@ export function Navbar() {
                                 </Button>
                             </Link>
                             <Link href="/signup">
-                                <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold bg-slate-50 dark:bg-slate-800">
+                                <Button variant="outline" className="border-slate-300 dark:border-slate-700 font-semibold bg-slate-50 dark:bg-slate-800 hidden sm:flex">
                                     회원가입
                                 </Button>
                             </Link>
                         </div>
                     )}
+
                     <Link href="/post/create">
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-transform hover:scale-105 ml-2">
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-transform hover:scale-105 ml-2 font-bold">
                             블랙박스 제보하기
                         </Button>
                     </Link>
+
+                    {/* 🚀  다크모드 토글 버튼 Ver-2026.03.15 */}
+                    <div className="border-l border-slate-300 dark:border-slate-700 pl-3 ml-1 flex items-center">
+                        {mounted ? (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                                className="text-xl rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                            >
+                                {theme === "dark" ? "🌞" : "🌙"}
+                            </Button>
+                        ) : (
+                            <div className="w-10 h-10" />
+                        )}
+                    </div>
                 </div>
             </div>
         </header >
