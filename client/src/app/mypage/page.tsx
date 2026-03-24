@@ -139,7 +139,23 @@ export default function MyPage() {
                                 <Trophy className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                             </div>
                             <CardTitle className="text-2xl font-extrabold mb-2">{profile.nickname}</CardTitle>
-                            <div className="flex justify-center mb-2">{getRoleBadge(profile.role)}</div>
+
+                            {/* 🚀 등급(Tier) 배지 및 승급 조건 툴팁 - Ver 2026.03.24 */}
+                            <div className="flex justify-center items-center gap-1.5 mb-2 relative group cursor-help w-max mx-auto">
+                                {getRoleBadge(profile.role)}
+                                <Info className="w-4 h-4 text-slate-400 hover:text-blue-500 transition-colors" />
+
+                                {/* 툴팁 본문 */}
+                                <div className="absolute top-8 left-1/2 -translate-x-1/2 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none text-left">
+                                    <p className="font-extrabold text-sm mb-2 text-slate-800 dark:text-slate-200">🏆 등급(Tier) 승급 조건</p>
+                                    <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5">
+                                        <li><strong className="text-slate-700 dark:text-slate-300">🌱 BEGINNER:</strong> 가입 시 기본 부여</li>
+                                        <li><strong className="text-blue-500">🎖️ EXPERT:</strong> 판결(투표) 3회 이상 참여</li>
+                                        <li><strong className="text-amber-500">👑 MASTER:</strong> 판결(투표) 10회 이상 참여</li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             <p className="text-sm text-slate-500 font-medium">{profile.email}</p>
                         </CardHeader>
                         <CardContent className="pt-6">

@@ -161,9 +161,21 @@ export default function HomePage() {
                                             <span className="mr-1">👁️</span> {post.views}
                                         </span>
                                     </div>
-                                    <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                        {post.content}
-                                    </CardTitle>
+
+                                    {/* 메인 페이지 첫 줄 "제목 추출" 처리 -  Ver 2026.03.24  */}
+                                    
+                                    <div className="flex flex-col gap-1">
+                                        {/*  첫 줄은 굵은 제목으로 처리 */}
+                                        <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100 line-clamp-1 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {post.content.split('\n')[0]}
+                                        </CardTitle>
+                                        {/*  두 번째 줄부터는 회색 본문으로 처리 */}
+                                        {post.content.split('\n').length > 1 && (
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">
+                                                {post.content.split('\n').slice(1).join(' ').trim()}
+                                            </p>
+                                        )}
+                                    </div>
                                 </CardHeader>
 
                                 {/* 카드 컴포넌트 내부 "닉네임", "등급" 노출 - Ver 2026.03.17 */}
