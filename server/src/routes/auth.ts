@@ -92,7 +92,7 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
 });
 
 // ====================================================================
-// 👤 [추가] 내 프로필 및 투표 기록 조회 API (GET /api/auth/me) - Ver 2026.03.20
+// 👤 [수정] 내 프로필, 투표 기록 및 📊 운전 MBTI 분석 API (GET /api/auth/me) - Ver 2026.03.24
 // ====================================================================
 router.get('/me', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
@@ -120,7 +120,68 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req: 
 
         if (!userProfile) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' });
 
-        res.status(200).json(userProfile);
+
+        // =======================================================
+        // 📊 [Feature G] 운전 MBTI 및 편차(Deviation) 분석 로직 - Ver 2026.03.24
+        // =======================================================
+        let mbtiData = null;
+
+        if (userProfile.votes.length > 0) {
+            // 성능 최적화: 유저가 투표한 모든 게시글 ID 추출
+            const postIds = userProfile.votes.map(v => v.post.id);
+
+            // Prisma Aggregate 활용: 해당 게시글들의 '대중 평균 과실(myFault)'을 한 번에 그룹화하여 계산
+            const avgVotes = await prisma.vote.groupBy({
+                by: ['postId'],
+                where: { postId: { in: postIds } },
+                _avg: { myFault: true }
+            });
+
+            // 게시글별 평균 매핑
+            const avgMap = new Map();
+            avgVotes.forEach(item => avgMap.set(item.postId, item._avg.myFault || 50));
+
+            let totalDeviation = 0;
+            let deviations: number[] = [];
+
+            // 1. 유저 투표율과 대중 평균 투표율 간의 편차(Deviation) 계산
+            for (const vote of userProfile.votes) {
+                const avgMyFault = avgMap.get(vote.post.id) || 50;
+                // 편차가 양수(+)면 블박차에게 더 가혹함, 음수(-)면 관대함
+                const deviation = vote.myFault - avgMyFault; 
+                totalDeviation += deviation;
+                deviations.push(deviation);
+            }
+
+            const avgDeviation = totalDeviation / userProfile.votes.length;
+            // 일관성을 측정하기 위한 분산(Variance) 계산
+            const variance = deviations.reduce((acc, val) => acc + Math.pow(val - avgDeviation, 2), 0) / userProfile.votes.length;
+
+            // 2. MBTI 유형 도출
+            let mbtiType = "객관적 솔로몬"; 
+            if (variance > 500) mbtiType = "예측불허 갈대"; // 일관성이 매우 떨어질 때
+            else if (avgDeviation > 15) mbtiType = "엄격한 심판관"; // 대중보다 블박차 과실을 높게 잡을 때
+            else if (avgDeviation < -15) mbtiType = "블박차 빙의"; // 대중보다 블박차 과실을 낮게 잡을 때
+
+            // 3. 차트 렌더링용 스탯 정규화 (0~100)
+            const strictness = Math.min(100, Math.max(0, 50 + avgDeviation * 1.5));
+            const leniency = Math.min(100, Math.max(0, 50 - avgDeviation * 1.5));
+            const objectivity = Math.min(100, Math.max(0, 100 - Math.abs(avgDeviation) * 2));
+            const consistency = Math.min(100, Math.max(0, 100 - (variance / 15)));
+
+            mbtiData = {
+                type: mbtiType,
+                chartData: [
+                    { subject: '엄격함', value: Math.round(strictness) },
+                    { subject: '객관성', value: Math.round(objectivity) },
+                    { subject: '관대함', value: Math.round(leniency) },
+                    { subject: '일관성', value: Math.round(consistency) }
+                ]
+            };
+        }
+
+        // 응답 데이터에 MBTI 통계 결합
+        res.status(200).json({ ...userProfile, mbti: mbtiData });
     } catch (error) {
         console.error('Get Profile Error:', error);
         res.status(500).json({ message: '프로필 조회 중 오류가 발생했습니다.' });
