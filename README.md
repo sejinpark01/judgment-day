@@ -119,7 +119,7 @@
     
     
 
-## **7. 📂 File structure -** Ver 1.9.1
+## **7. 📂 File structure -** Ver 1.10.1
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -129,6 +129,7 @@
 - **Interactive Components**: 고정밀 컨트롤러(VideoPlayer) 및 실시간 비율 조정(VoteSlider), 캔버스 드로잉(AccidentSketchbook), 사고 분석 토론(CommentSection) 등 도메인 특화 인터페이스 구현 완료.
 - **Performance Optimization**: Redis를 활용한 인메모리 캐싱 레이어 구축으로 조회 성능 극대화.
 - **Dark Mode Integration**: next-themes를 활용한 전역 테마 관리 시스템 도입.
+- **Real-time Architecture**: Socket.io를 확장하여 투표 차트 동기화뿐만 아니라 특정 유저 타겟팅 1:1 실시간 알림(Notification)망 구축 완료.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -146,8 +147,8 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── page.tsx              # 메인 홈 화면 (게시글 리스트 및 페이지네이션 연동)
 │       │   ├── login/
 │       │   │   └── page.tsx          # 로그인 페이지 (/login) 라우팅 껍데기
-│       │   ├── mypage/               # 🌟 (신규) 마이페이지 도메인
-│       │   │   └── page.tsx          # 내 투표 기록, 등급 시각화, 비밀번호 변경 화면
+│       │   ├── mypage/               # 🌟 마이페이지 도메인
+│       │   │   └── page.tsx          # 내 투표 기록, 등급 시각화, 운전 MBTI 시각화(Recharts), 비밀번호 변경 화면
 │       │   ├── post/
 │       │   │   ├── create/
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
@@ -159,7 +160,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │       └── page.tsx          # 회원가입 페이지 (/signup) 라우팅 껍데기
 │       │
 │       ├── components/               # 재사용 가능한 UI 블록 모음
-│       │   ├── Navbar.tsx            # 🌟 (신규) 다크모드 및 로그인 상태를 관리하는 전역 헤더
+│       │   ├── Navbar.tsx            # 다크모드, 로그인 상태 및 🌟실시간 알림(Notification) 뱃지를 관리하는 전역 헤더
 │       │   ├── ThemeProvider.tsx     # 다크모드 전역 상태 공급자
 │       │   ├── features/             # 특정 도메인 로직을 위해 조립된 복합 UI 폼
 │       │   │   ├── auth/
@@ -178,7 +179,8 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── useAuth.ts            # 로그인/회원가입 상태 및 제출 이벤트 통제
 │       │   ├── useCreatePost.ts      # 게시글 작성 상태 및 데이터 전송 로직
 │       │   ├── usePosts.ts           # 메인 페이지 게시글 목록 조회 로직
-│       │   └── usePostDetail.ts      # 상세 페이지 단일 게시글 조회 로직
+│       │   ├── usePostDetail.ts      # 상세 페이지 단일 게시글 조회 로직
+│       │   └── useSocketNotification.ts # 🌟 (신규) 1:1 실시간 알림 소켓 연결 및 상태 관리 훅
 │       │
 │       ├── lib/                      # 프로젝트 전반에서 공통으로 쓰이는 유틸리티
 │       │   └── utils.ts              # Tailwind 클래스 병합 등 유틸 함수
@@ -191,15 +193,16 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 ├── tsconfig.json
 ├── .env                       # DATABASE_URL이 정의된 곳
 ├── prisma/
-│   └── schema.prisma          # url = env("DATABASE_URL") 포함 (Comment 모델 추가)
+│   └── schema.prisma          # url = env("DATABASE_URL") 포함 (Comment 및 🌟Notification 모델 추가)
 ├── src/
-│   ├── index.ts               # 서버 진입점
+│   ├── index.ts               # 서버 진입점 (🌟Socket 1:1 타겟팅 Room 로직 추가)
 │   ├── lib/
 │   │   ├── prisma.ts          # Prisma 인스턴스 관리
 │   │   └── redis.ts           # Redis 클라이언트 연결 모듈
 │   ├── middlewares/
 │   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
 │   └── routes/
-│       ├── auth.ts            # 회원가입, 로그인, 🌟(신규) 프로필 조회 및 PW 변경 라우터
-│       └── post.ts            # 게시글 및 댓글(Comment) CRUD API 라우터 (Passport, Redis 적용)
+│       ├── auth.ts            # 회원가입, 로그인, 프로필 조회(MBTI) 및 PW 변경 라우터
+│       ├── notification.ts    # 🌟 (신규) 안 읽은 알림 조회 및 읽음 처리 API 라우터
+│       └── post.ts            # 게시글 및 댓글(Comment) CRUD API 라우터 (Passport, Redis, 🌟Socket Emit 적용)
 └── node_modules/
