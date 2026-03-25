@@ -12,7 +12,12 @@ model User {
   id         Int      @id @default(autoincrement())
   email      String   @unique
   nickname   String
-  password   String   // 로그인 하려면 필요함 (PRD엔 없지만 필수)
+  password   String?   // 로그인 하려면 필요함 (PRD엔 없지만 필수) - ✅ 수정: 소셜 로그인은 비밀번호가 없으므로 Optional(?) 처리
+  
+  // ✅ 신규: 소셜 로그인 식별용 필드 추가
+  provider   String   @default("local") // 'local', 'kakao', 'google'
+  snsId      String?  @map("sns_id")    // 소셜 플랫폼에서 부여한 고유 ID
+  
   role      String   @default("BEGINNER")
   createdAt  DateTime @default(now()) @map("created_at")
   

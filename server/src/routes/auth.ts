@@ -33,6 +33,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
                 email,
                 nickname,
                 password: hashedPassword,
+                provider: 'local', // 명시적으로 local 가입임을 표시 - Ver 2026.03.25
             },
         });
 
@@ -48,7 +49,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
     }
 });
 
-// 로그인 API (POST /api/auth/login) 
+// 일반 이메일 로그인 API (POST /api/auth/login) 
 router.post('/login', async (req: Request, res: Response): Promise<any> => {
     try {
         const { email, password } = req.body;
@@ -62,6 +63,11 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
             return res.status(401).json({ message: '가입되지 않은 이메일이거나 비밀번호가 틀렸습니다.' });
+        }
+
+        // 2-1. 소셜 로그인 유저 방어 로직 (Type Guard)
+        if (!user.password) {
+            return res.status(400).json({ message: '소셜 로그인으로 가입된 계정입니다. 카카오 또는 구글 로그인을 이용해주세요.' });
         }
 
         // 3. 비밀번호 일치 여부 확인 (평문 비밀번호 vs DB의 해시 비밀번호)
@@ -82,7 +88,7 @@ router.post('/login', async (req: Request, res: Response): Promise<any> => {
         res.status(200).json({
             message: '로그인에 성공했습니다.',
             token,
-            user: { id: user.id, email: user.email, nickname: user.nickname }
+            user: { id: user.id, email: user.email, nickname: user.nickname, role: user.role }
         });
 
     } catch (error) {
@@ -148,7 +154,7 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req: 
             for (const vote of userProfile.votes) {
                 const avgMyFault = avgMap.get(vote.post.id) || 50;
                 // 편차가 양수(+)면 블박차에게 더 가혹함, 음수(-)면 관대함
-                const deviation = vote.myFault - avgMyFault; 
+                const deviation = vote.myFault - avgMyFault;
                 totalDeviation += deviation;
                 deviations.push(deviation);
             }
@@ -158,7 +164,7 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req: 
             const variance = deviations.reduce((acc, val) => acc + Math.pow(val - avgDeviation, 2), 0) / userProfile.votes.length;
 
             // 2. MBTI 유형 도출
-            let mbtiType = "객관적 솔로몬"; 
+            let mbtiType = "객관적 솔로몬";
             if (variance > 500) mbtiType = "예측불허 갈대"; // 일관성이 매우 떨어질 때
             else if (avgDeviation > 15) mbtiType = "엄격한 심판관"; // 대중보다 블박차 과실을 높게 잡을 때
             else if (avgDeviation < -15) mbtiType = "블박차 빙의"; // 대중보다 블박차 과실을 낮게 잡을 때
@@ -203,6 +209,11 @@ router.put('/password', passport.authenticate('jwt', { session: false }), async 
         const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
         if (!existingUser) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' });
 
+        // 0. 소셜 로그인 유저 방어 로직 (Type Guard) - Ver 2026.03.25
+        if (!existingUser.password) {
+            return res.status(400).json({ message: '소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.' });
+        }
+
         // 1. 현재 비밀번호 검증
         const isMatch = await bcrypt.compare(currentPassword, existingUser.password);
         if (!isMatch) {
@@ -221,6 +232,32 @@ router.put('/password', passport.authenticate('jwt', { session: false }), async 
         console.error('Change Password Error:', error);
         res.status(500).json({ message: '비밀번호 변경 중 오류가 발생했습니다.' });
     }
+});
+
+// ====================================================================
+// 🚀 [신규] 카카오(Kakao) OAuth 2.0 라우터 - Ver 2026.03.25
+// ====================================================================
+router.get('/kakao', passport.authenticate('kakao'));
+
+router.get('/kakao/callback', passport.authenticate('kakao', { session: false, failureRedirect: 'http://localhost:3000/login' }), (req: Request, res: Response) => {
+    const user = req.user as any;
+    const token = jwt.sign({ id: user.id, email: user.email, nickname: user.nickname }, process.env.JWT_SECRET || 'fallback_secret_key', { expiresIn: '24h' });
+
+    const userStr = encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, nickname: user.nickname, role: user.role }));
+    res.redirect(`http://localhost:3000/login?token=${token}&user=${userStr}`);
+});
+
+// ====================================================================
+// 🚀 [신규] 구글(Google) OAuth 2.0 라우터 - Ver 2026.03.25
+// ====================================================================
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: 'http://localhost:3000/login' }), (req: Request, res: Response) => {
+    const user = req.user as any;
+    const token = jwt.sign({ id: user.id, email: user.email, nickname: user.nickname }, process.env.JWT_SECRET || 'fallback_secret_key', { expiresIn: '24h' });
+
+    const userStr = encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, nickname: user.nickname, role: user.role }));
+    res.redirect(`http://localhost:3000/login?token=${token}&user=${userStr}`);
 });
 
 export default router;
