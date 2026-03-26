@@ -38,10 +38,14 @@ passport.use(
 passport.use(
   new KakaoStrategy({
     clientID: process.env.KAKAO_CLIENT_ID || 'dummy_kakao_id',
-    callbackURL: '/api/auth/kakao/callback',
+    callbackURL: 'http://localhost:4000/api/auth/kakao/callback',
   }, async (accessToken, refreshToken, profile, done) => {
+
+    console.log("🚀 [BACKEND] 카카오 로그인 콜백 함수 진입!"); // 로그 추가
+    console.log("카카오 프로필 정보:", profile); // 프로필 정보 확인용
     try {
       const snsId = String(profile.id);
+      // 🚀 이메일 제공 동의를 안(못) 한 경우, 임의의 고유 가짜 이메일 생성함
       const email = profile._json?.kakao_account?.email || `kakao_${snsId}@nomail.com`;
       const nickname = profile._json?.properties?.nickname || `카카오유저${snsId.substring(0, 4)}`;
 
@@ -69,8 +73,11 @@ passport.use(
   new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_google_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
-    callbackURL: '/api/auth/google/callback',
+    callbackURL: 'http://localhost:4000/api/auth/google/callback',
   }, async (accessToken, refreshToken, profile, done) => {
+    
+    console.log("🚀 [BACKEND] 구글 로그인 콜백 함수 진입!"); // 로그 추가
+    console.log("구글 프로필 정보:", profile); // 프로필 정보 확인용
     try {
       const snsId = String(profile.id);
       const email = profile.emails?.[0].value || `google_${snsId}@nomail.com`;
