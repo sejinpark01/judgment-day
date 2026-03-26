@@ -69,13 +69,14 @@ passport.use(
 // ==========================================================
 // 🚀 3. Google 소셜 로그인 전략 (Ver 2026.03.25)
 // ==========================================================
+console.log("🧐 현재 구글 시크릿 키:", process.env.GOOGLE_CLIENT_SECRET);
 passport.use(
   new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_google_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
     callbackURL: 'http://localhost:4000/api/auth/google/callback',
   }, async (accessToken, refreshToken, profile, done) => {
-    
+
     console.log("🚀 [BACKEND] 구글 로그인 콜백 함수 진입!"); // 로그 추가
     console.log("구글 프로필 정보:", profile); // 프로필 정보 확인용
     try {
