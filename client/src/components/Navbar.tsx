@@ -41,12 +41,19 @@ export function Navbar() {
     // 로그아웃 함수
     const handleLogout = () => {
         if (confirm('정말로 로그아웃 하시겠습니까?')) {
+            // 1. 내 브라우저(로컬 스토리지)에 있는 토큰과 유저 정보 삭제
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setIsLoggedIn(false);
             setUser(null);
+
             alert('성공적으로 로그아웃 되었습니다.');
-            window.location.href = '/'; // 로그아웃 후 메인으로 강제 이동
+
+            // 2. 카카오 계정 세션 삭제 요청 후 프론트 메인으로 돌아오기 - Ver 2026.03.26
+            const KAKAO_CLIENT_ID = "bab66edf10f61b5ad88ce20eca1ab5e1"; // 아까 발급받은 REST API 키
+            const LOGOUT_REDIRECT_URI = "http://localhost:3000"; // 1단계에서 카카오에 등록한 돌아올 주소
+
+            window.location.href = `https://kauth.kakao.com/oauth/logout?client_id=${KAKAO_CLIENT_ID}&logout_redirect_uri=${LOGOUT_REDIRECT_URI}`;
         }
     };
 
