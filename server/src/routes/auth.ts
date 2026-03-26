@@ -113,6 +113,7 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req: 
                 nickname: true,
                 role: true,
                 createdAt: true,
+                provider: true, // 프론트엔드에서 소셜 유저인지 구분하기 위해 - Ver 2026.03.26
                 votes: {
                     include: {
                         post: {
