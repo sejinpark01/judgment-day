@@ -251,7 +251,7 @@ router.get('/kakao/callback', passport.authenticate('kakao', { session: false, f
 // ====================================================================
 // 🚀 [신규] 구글(Google) OAuth 2.0 라우터 - Ver 2026.03.25
 // ====================================================================
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
 
 router.get('/google/callback', passport.authenticate('google', { session: false, failureRedirect: 'http://localhost:3000/login' }), (req: Request, res: Response) => {
     const user = req.user as any;
