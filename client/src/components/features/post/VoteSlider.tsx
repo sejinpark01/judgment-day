@@ -65,9 +65,11 @@ export function VoteSlider({ postId }: VoteSliderProps) {
                 // 예: window.location.href = '/login';
             }
 
-            // 그 외의 서버 에러 처리
+           // 🚀 [수정] 429(도배 방어) 등 그 외의 서버 에러 처리 로직
             if (!response.ok) {
-                throw new Error("투표 제출에 실패했습니다. 다시 시도해 주세요.");
+                const errorData = await response.json().catch(() => ({}));
+                // 백엔드가 보낸 메시지가 있으면 그걸 띄우고, 없으면 기본 메시지 띄우기
+                throw new Error(errorData.message || "투표 제출에 실패했습니다. 다시 시도해 주세요.");
             }
 
             // 🚀 1. 소켓을 기다리지 않고 API 응답을 통해 즉시 차트를 업데이트 (스르륵 즉시 시작!)

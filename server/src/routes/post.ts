@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express';
 import passport from 'passport';
 import prisma from '../lib/prisma';
 import redisClient from '../lib/redis'; // ✅ Redis 불러오기 - Ver 2026.03.11
+import { voteLimiter } from '../middlewares/rateLimiter'; // Redis로 Rate Limiting(요청 제한) - Ver 2026.03.27
 
 const router = Router();
 
@@ -150,7 +151,7 @@ router.get('/:id/stats', async (req: Request, res: Response): Promise<any> => {
 });
 
 // 🚀 [수정 Ver- 2026.03.24] 투표 API & Socket 실시간 브로드캐스트 & 등급(Tier) 산정 로직 적용 (POST) & 🔔 알림(Notification) 전송
-router.post('/:id/vote', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
+router.post('/:id/vote', voteLimiter, passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
         const user = req.user as any;
@@ -319,7 +320,7 @@ router.post('/:id/comments', passport.authenticate('jwt', { session: false }), a
         // 🔔 [신규] 원작자에게 1:1 실시간 알림 보내기 - Ver 2026.03.24
         // ====================================================================
         const post = await prisma.post.findUnique({ where: { id: postId } });
-        if (post && post.writerId !== user.id) { 
+        if (post && post.writerId !== user.id) {
             const message = `회원님의 게시글에 새로운 원인 분석 댓글이 달렸습니다.`;
             const notification = await prisma.notification.create({
                 data: { userId: post.writerId, postId: post.id, type: 'COMMENT', message }
