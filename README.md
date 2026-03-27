@@ -107,19 +107,20 @@
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
 - [x] **Phase 5: Polish & UI/UX** (히어로 배너, 카드 호버, 카테고리 뱃지, 다크모드 시스템 구축)
-- [ ] **Phase 6: Feature Enhancement & Deploy**
+- [ ] **Phase 6: Feature Enhancement**
     - **인터페이스 최적화:** UI 플로팅(Sticky) 적용 및 쇼츠 영상 뷰 최적화
     - **UX 고도화:** 메인 페이지 카테고리(6대 사고 유형) 필터링 및 정렬(최신/인기순) 추가
     - **데이터 동기화:** 실시간 조회수 및 작성자 닉네임(User.nickname) 연동
     - **커뮤니티 기능:** 게시글 수정/삭제, 댓글 시스템, 투표 토글 옵션, 마이 페이지 구현
     - **나의 판결 성향 분석 (운전 MBTI):** 사용자 투표 데이터를 대중 평균 투표율과 비교·분석하여 방사형 차트(Radar Chart)로 시각화하고 맞춤형 칭호 부여.
     - **1:1 실시간 활동 알림:** Socket.io 고유 Room을 활용한 타겟팅 통신으로, 내 게시글의 새로운 반응(투표/댓글)을 새로고침 없이 즉각적으로 수신.
-    - **특화 기능:** AI 판사(my-traffic-judge) 연동
-    - **인프라 및 보안:** OAuth 소셜 로그인, Redis Rate Limit 보안 강화, CI/CD 배포
+    - **특화 기능 (AI, 타사인증, 보안):** AI 판사(my-traffic-judge) 연동, OAuth 소셜 로그인 (카카오 / 구글), Redis Rate Limit 보안 강화
+- [ ] **Phase 7: Deploy**
+    - **인프라 및 배포:** CI/CD 배포
     
     
-
-## **7. 📂 File structure -** Ver 1.10.1
+    
+## **7. 📂 File structure -** Ver 1.11.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -130,6 +131,7 @@
 - **Performance Optimization**: Redis를 활용한 인메모리 캐싱 레이어 구축으로 조회 성능 극대화.
 - **Dark Mode Integration**: next-themes를 활용한 전역 테마 관리 시스템 도입.
 - **Real-time Architecture**: Socket.io를 확장하여 투표 차트 동기화뿐만 아니라 특정 유저 타겟팅 1:1 실시간 알림(Notification)망 구축 완료.
+- **Security & Infrastructure**: Redis와 express-rate-limit을 결합하여 다중 서버 환경에서도 동기화되는 Brute-force 및 DDoS 방어 미들웨어(Rate Limiting) 계층 구축 완료.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -200,9 +202,10 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │   │   ├── prisma.ts          # Prisma 인스턴스 관리
 │   │   └── redis.ts           # Redis 클라이언트 연결 모듈
 │   ├── middlewares/
-│   │   └── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
+│   │   ├── passport.ts        # Passport JWT 인증 전략 및 경비원 역할
+│   │   └── rateLimiter.ts     # 🛡️ (신규) Redis 기반 API 요청 제한 (Brute-force/DDoS 방어) 미들웨어
 │   └── routes/
-│       ├── auth.ts            # 회원가입, 로그인, 프로필 조회(MBTI) 및 PW 변경 라우터
+│       ├── auth.ts            # 회원가입, 로그인, 프로필 조회(MBTI) 및 PW 변경 라우터 (🛡️ Rate Limiting 적용)
 │       ├── notification.ts    # 🌟 (신규) 안 읽은 알림 조회 및 읽음 처리 API 라우터
-│       └── post.ts            # 게시글 및 댓글(Comment) CRUD API 라우터 (Passport, Redis, 🌟Socket Emit 적용)
+│       └── post.ts            # 게시글 및 댓글(Comment) CRUD API 라우터 (Passport, Redis, 🌟Socket Emit, 🛡️ Rate Limiting 적용)
 └── node_modules/

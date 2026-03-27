@@ -16,7 +16,7 @@ export const loginLimiter = rateLimit({
     max: 5, // IP당 최대 5회 허용
     message: { message: '로그인 시도 횟수를 초과했습니다. 15분 후에 다시 시도해주세요.' },
     standardHeaders: true, // RateLimit 관련 헤더(RateLimit-Limit 등)를 응답에 포함
-    legacyHeaders: false, 
+    legacyHeaders: false,
 });
 
 // 2. 🚨 투표(Vote) 매크로 및 API 도배(DDoS) 방어
