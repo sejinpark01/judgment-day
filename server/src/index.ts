@@ -72,14 +72,9 @@ app.get('/api/test', (req, res) => {
   res.json({ message: '백엔드 서버 연결 성공! 🚀' });
 });
 
-// 5. 서버 실행 (Redis 연결 추가) -Ver 2026.03.11
-httpServer.listen(PORT, async () => {
+// 5. 서버 실행 
+httpServer.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);
-
-  // 서버가 켜지면 Redis도 비동기로 연결 시작!
-  try {
-    await redisClient.connect();
-  } catch (error) {
-    console.error('Redis 연결 실패:', error);
-  }
+  // 🚀 기존에 있던 try-catch(await redisClient.connect()) 부분은 삭제.
+  // (redis.ts에서 이미 즉시 연결하도록 처리했기 때문)
 });

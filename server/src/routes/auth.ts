@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma'; // 👈 수정: 직접 생성하지 말고 불러오기 (2026.02.26)
 import passport from 'passport';
+import { loginLimiter } from '../middlewares/rateLimiter'; // Redis로 Rate Limiting(요청 제한) - Ver 2026.03.27
 
 const router = Router();
 
@@ -50,7 +51,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<any> => {
 });
 
 // 일반 이메일 로그인 API (POST /api/auth/login) 
-router.post('/login', async (req: Request, res: Response): Promise<any> => {
+router.post('/login', loginLimiter, async (req: Request, res: Response): Promise<any> => {
     try {
         const { email, password } = req.body;
 
