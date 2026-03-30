@@ -37,6 +37,7 @@ model Post {
   isVoteEnabled Boolean @default(true) @map("is_vote_enabled") // ✅ 신규 추가: 투표 활성화 여부
   views     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
+  aiSummary     Json? // ✅ 신규 추가: 🤖 AI 판사의 1차 소견서(JSON)를 캐싱하기 위한 칼럼.
 
   writerId  Int      @map("writer_id")
   writer    User     @relation(fields: [writerId], references: [id])
