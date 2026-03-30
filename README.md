@@ -18,7 +18,7 @@
 |Data Management| **MySQL** (Relational), **Prisma** (ORM), **Redis** (Caching)|
 | Backend | **Node.js** (Express), **TypeScript**, **Socket.io** (WebSocket & Real-time), http |
 | Frontend | **Next.js** (App Router), **TypeScript**, React(React Hooks), **Recharts/Chart.js** (Data Visualization), Fetch API |
-| Auth | **Passport.js** (JWT Strategy), bcrypt, CORS |
+| Auth & Security | **Passport.js** (Kakao, Google, JWT Strategy), bcrypt, CORS, **express-rate-limit**, **rate-limit-redis** |
 | Styling | **Tailwind CSS**, shadcn/ui, Lucide Icons |
 | Core APIs | YouTube Iframe API (seekTo, getCurrentTime, playVideo), HTML5 Canvas API (getContext('2d')) |
 | Libraries | react-youtube, lucide-react , next-themes |
@@ -82,6 +82,18 @@
     - 알림 수신 시 종소리(🔔) 아이콘에 Red Dot(배지) 활성화 및 토스트(Toast) 팝업 제공.
     - 알림 클릭 시 해당 게시글 상세 페이지로 라우팅 처리.
 
+### I: 🔐 다중 소셜 로그인 및 통합 인증 (OAuth 2.0 + JWT)
+- **User Story:** "비밀번호를 외울 필요 없이 카카오, 구글 계정으로 1초 만에 로그인하고 싶다."
+- **Tech Spec:**
+    - `passport-kakao`, `passport-google-oauth20` 전략 적용 및 자동 회원가입(Upsert) 처리.
+    - URL Query Parameter 기반 클라이언트-서버 분리 환경 토큰 파싱 및 기존 JWT 세션 통합.
+
+### J: 🛡️ 분산 환경 API Rate Limiting (Security)
+- **User Story:** "악성 유저나 매크로 봇이 무차별적으로 투표를 조작하거나 내 계정을 해킹하지 못하도록 서비스가 안전하게 보호해 줬으면 좋겠다."
+- **Tech Spec:**
+    - 다중 서버(Scale-out) 환경 동기화를 위한 Redis 인메모리 기반 Rate Limiting 미들웨어 적용.
+    - 로그인 무차별 대입 공격(15분/5회) 및 투표 매크로/DDoS 도배(1분/10회) 원천 차단 (HTTP 429 반환).    
+
 ## 4. Coding Rules & Guidelines
 ### General Principles
 - **KISS:** 과도한 추상화 지양, 명확한 코드 작성
@@ -100,6 +112,8 @@
 | **Socket 연결 끊김** | 클라이언트 `reconnect` 활성화 + 투표 버튼 비활성화(Disabled) |
 | **비로그인 투표 시도** | 슬라이더 조작 시 로그인 모달 호출 + 게시글 상태 유지 |
 | **외부 기기/모바일 접속(CORS) 에러** | Express CORS 미들웨어 origin 도메인 허용 및 네트워크 바인딩(0.0.0.0) 처리 |
+| **로그인 무차별 대입 및 투표 DDoS** | Redis Rate Limit 미들웨어로 API 진입점 원천 차단 (HTTP 429 커스텀 에러 파싱) |
+| **소셜 유저의 비정상적 정보 수정 시도** | 백엔드 비밀번호 Type Guard 적용 및 프론트엔드 명시적 조건부 렌더링(배지 노출)으로 접근 은닉 |
 
 ## 6. Development Roadmap
 - [x] **Phase 1:** 초기 세팅 & DB 설계
@@ -116,7 +130,7 @@
     - **1:1 실시간 활동 알림:** Socket.io 고유 Room을 활용한 타겟팅 통신으로, 내 게시글의 새로운 반응(투표/댓글)을 새로고침 없이 즉각적으로 수신.
     - **특화 기능 (AI, 타사인증, 보안):** AI 판사(my-traffic-judge) 연동, OAuth 소셜 로그인 (카카오 / 구글), Redis Rate Limit 보안 강화
 - [ ] **Phase 7: Deploy**
-    - **인프라 및 배포:** CI/CD 배포
+    - **인프라 및 배포:** GitHub Actions 기반 CI/CD 자동화 배포 파이프라인 구축 및 AWS EC2 + 클라우드 DB 연동
     
     
     
