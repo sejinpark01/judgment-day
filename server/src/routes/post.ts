@@ -5,6 +5,7 @@ import passport from 'passport';
 import prisma from '../lib/prisma';
 import redisClient from '../lib/redis'; // ✅ Redis 불러오기 - Ver 2026.03.11
 import { voteLimiter } from '../middlewares/rateLimiter'; // Redis로 Rate Limiting(요청 제한) - Ver 2026.03.27
+import { GoogleGenerativeAI } from '@google/generative-ai'; // 🤖 Gemini 패키지 추가 - Ver 2026.03.30
 
 const router = Router();
 
@@ -382,6 +383,84 @@ router.delete('/:id', passport.authenticate('jwt', { session: false }), async (r
     } catch (error) {
         console.error('Delete Post Error:', error);
         res.status(500).json({ message: '게시글 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
+// ====================================================================
+// 🤖  AI 판사 사고 상황 분석 API (POST /api/posts/:id/ai-analyze) - Ver 2026.03.30
+// ====================================================================
+router.post('/:id/ai-analyze', async (req: Request, res: Response): Promise<any> => {
+    try {
+        const postId = parseInt(req.params.id as string, 10);
+
+        // 1. 게시글 데이터(상황설명, 카테고리) 조회
+        const post = await prisma.post.findUnique({ where: { id: postId } });
+        if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+
+        // 2. ⚡ [비용 최적화 100% 방어] 이미 분석된 결과(캐시)가 DB에 있다면 API 찌르지 않고 즉시 반환!
+        if (post.aiSummary) {
+            console.log(`⚡ [AI Cache Hit] 게시글 ${postId}번 - DB에 저장된 분석 결과 즉시 반환`);
+            return res.status(200).json(post.aiSummary);
+        }
+
+        // 3. Gemini API 환경 세팅
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) return res.status(500).json({ message: 'AI API 키가 설정되지 않았습니다.' });
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        
+        // 🚀 [시니어 어필 포인트]: 모델 호출 시 responseMimeType을 강제하여 무조건 JSON으로만 받음!
+        const model = genAI.getGenerativeModel({ 
+            model: 'gemini-1.5-flash',
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        // 4. 🧠 프롬프트 엔지니어링 (System Prompt + User Data)
+        const prompt = `
+            너는 10년 경력의 냉철하고 객관적인 교통사고 전문 AI 분석관이야.
+            아래 제공되는 [사고 카테고리]와 [사용자의 상황 설명]을 바탕으로, 도로교통법 판례에 근거한 객관적인 과실 비율 가이드라인을 제시해 줘.
+
+            [사고 데이터]
+            - 사고 카테고리: ${post.category}
+            - 상황 설명: ${post.content}
+
+            [엄격한 제약사항]
+            1. 사용자의 감정적인 호소나 사고와 무관한 내용은 철저히 무시할 것.
+            2. 인사말이나 부연 설명 절대 금지.
+            3. 반드시 제공된 JSON 스키마 규격에 맞춰서 응답할 것.
+
+            [응답 JSON 스키마]
+            {
+              "predictedPrecedent": "예: 70:30 (블랙박스:상대방 기준)",
+              "summary": "사고 상황에 대한 객관적 요약 1줄",
+              "keyIssues": [
+                "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 1",
+                "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 2"
+              ],
+              "adviceForWriter": "작성자에게 투표를 돕기 위해 스케치북이나 설명 보완을 권장하는 친절한 1줄 조언"
+            }
+        `;
+
+        // 5. Gemini API 호출 및 통신 대기
+        console.log(`🤖 [AI API Call] 게시글 ${postId}번 - Gemini API 최초 분석 요청 중...`);
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+        
+        // 6. JSON 데이터로 파싱
+        const parsedData = JSON.parse(responseText);
+
+        // 7. 분석 결과를 DB에 저장 (영구 캐싱)
+        await prisma.post.update({
+            where: { id: postId },
+            data: { aiSummary: parsedData } // Json 타입 컬럼에 그대로 쏙!
+        });
+
+        // 8. 프론트엔드로 전달
+        res.status(200).json(parsedData);
+
+    } catch (error) {
+        console.error('AI Analyze Error:', error);
+        res.status(500).json({ message: 'AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' });
     }
 });
 
