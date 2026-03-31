@@ -114,12 +114,12 @@ export default function EditPostPage() {
                                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 required
                             >
-                                <option value="NORMAL">🚗 일반사고</option>
-                                <option value="SUDDEN_ACCEL">🚨 급발진/오조작</option>
+                                <option value="NORMAL">🚗 일반 사고(차선변경 등)</option>
+                                <option value="SUDDEN_ACCEL">🚨 급발진/페달오조작</option>
                                 <option value="DILEMMA_ZONE">🚥 딜레마존</option>
-                                <option value="JAYWALKING">🚶 무단횡단</option>
-                                <option value="RECKLESS_DRIVING">💢 보복/난폭</option>
-                                <option value="SCHOOL_ZONE">🚸 스쿨존</option>
+                                <option value="JAYWALKING">🚶 무단횡단 사고</option>
+                                <option value="RECKLESS_DRIVING">💢 보복/난폭운전</option>
+                                <option value="SCHOOL_ZONE">🚸 스쿨존 사고</option>
                             </select>
 
                             {/* 🚀 신규 추가: 투표 활성화/비활성화 토글 UI- Ver 2026.03.20 */}
