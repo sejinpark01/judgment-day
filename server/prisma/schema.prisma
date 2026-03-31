@@ -30,6 +30,7 @@ model User {
 // Post 모델 (PRD: writer_id, video_url, category, views...)
 model Post {
   id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255) // ✅ 신규 추가: 명시적 제목 컬럼
   videoUrl  String   @map("video_url")
   category  String   
   content   String   @db.Text

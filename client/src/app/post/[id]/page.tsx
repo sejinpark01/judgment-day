@@ -14,14 +14,25 @@ import { CommentSection } from "@/components/features/post/CommentSection"; // �
 import { Pencil, ArrowLeft, Eye, Calendar, User, Edit, Trash2, Scale } from "lucide-react"; //✅ Edit, Trash2 아이콘 추가함. Ver-2026.03.18 
 
 
-// 카테고리 뱃지 함수
+// 🎨 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (9개 카테고리 적용) - Ver 2026.03.31
 const getCategoryBadge = (category: string) => {
     switch (category) {
-        case 'SUDDEN_ACCEL': return <span className="bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 text-xs font-bold px-2.5 py-1 rounded-md">🚨 급발진/오조작</span>;
-        case 'DILEMMA_ZONE': return <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-bold px-2.5 py-1 rounded-md">🚥 딜레마존</span>;
-        case 'JAYWALKING': return <span className="bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 text-xs font-bold px-2.5 py-1 rounded-md">🚶 무단횡단</span>;
-        case 'RECKLESS_DRIVING': return <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 text-xs font-bold px-2.5 py-1 rounded-md">💢 보복/난폭</span>;
-        case 'SCHOOL_ZONE': return <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-md">🚸 스쿨존</span>;
+        case 'SUDDEN_ACCEL':
+            return <span className="bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 text-xs font-bold px-2.5 py-1 rounded-md">🚨 급발진/오조작</span>;
+        case 'DILEMMA_ZONE'
+            : return <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 text-xs font-bold px-2.5 py-1 rounded-md">🚥 딜레마존</span>;
+        case 'JAYWALKING':
+            return <span className="bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 text-xs font-bold px-2.5 py-1 rounded-md">🚶 무단횡단</span>;
+        case 'RECKLESS_DRIVING':
+            return <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 text-xs font-bold px-2.5 py-1 rounded-md">💢 보복/난폭</span>;
+        case 'SCHOOL_ZONE':
+            return <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-md">🚸 스쿨존</span>;
+        case 'FUNNY':
+            return <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-yellow-200 dark:border-yellow-800">🤣 황당사고</span>;
+        case 'HEARTWARMING':
+            return <span className="bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-pink-200 dark:border-pink-800">💖 감동/훈훈</span>;
+        case 'LEGENDARY':
+            return <span className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800">😎 레전드</span>;
         case 'NORMAL':
         default: return <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-md">🚗 일반사고</span>;
     }
@@ -130,9 +141,8 @@ export default function PostDetailPage() {
                                     </div>
                                 )}
                             </div>
-
                             <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-white leading-snug">
-                                {post.content.split('\n')[0]}
+                                {post.title}
                             </CardTitle>
 
                             {/* 🚀 수정된 작성자(등급 포함), 날짜, 조회수 영역  Ver-206.03.17 */}
