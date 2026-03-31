@@ -15,7 +15,7 @@ function extractVideoId(url: string) {
     return match ? match[1] : '';
 }
 
-// 🎨 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (6대 카테고리 적용) - Ver 2026.03.15
+// 🎨 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (9개 카테고리 적용) - Ver 2026.03.31
 const getCategoryBadge = (category: string) => {
     switch (category) {
         case 'SUDDEN_ACCEL':
@@ -28,6 +28,12 @@ const getCategoryBadge = (category: string) => {
             return <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-purple-200 dark:border-purple-800">💢 보복/난폭</span>;
         case 'SCHOOL_ZONE':
             return <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-emerald-200 dark:border-emerald-800">🚸 스쿨존</span>;
+        case 'FUNNY':
+            return <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-yellow-200 dark:border-yellow-800">🤣 황당사고</span>;
+        case 'HEARTWARMING':
+            return <span className="bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-pink-200 dark:border-pink-800">💖 감동/훈훈</span>;
+        case 'LEGENDARY':
+            return <span className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800">😎 레전드</span>;
         case 'NORMAL':
         default:
             return <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm border border-blue-200 dark:border-blue-800">🚗 일반사고</span>;
@@ -99,6 +105,9 @@ export default function HomePage() {
                         <option value="JAYWALKING">🚶 무단횡단</option>
                         <option value="RECKLESS_DRIVING">💢 보복/난폭</option>
                         <option value="SCHOOL_ZONE">🚸 스쿨존</option>
+                        <option value="FUNNY">🤣 황당/어이없는 사고</option>
+                        <option value="HEARTWARMING">💖 훈훈한 블랙박스</option>
+                        <option value="LEGENDARY">😎 레전드 회피</option>
                     </select>
 
                     {/* 최신순/인기순 정렬 토글 */}
@@ -154,6 +163,7 @@ export default function HomePage() {
                                     )}
                                 </div>
 
+                                {/* 메인 페이지 첫 줄 "제목 추출" 처리 -> 명시적 타이틀 렌더링으로 변경  Ver 2026.03.31*/}
                                 <CardHeader className="pb-2 pt-5 px-5">
                                     <div className="flex justify-between items-center mb-3">
                                         {getCategoryBadge(post.category)}
@@ -162,27 +172,21 @@ export default function HomePage() {
                                         </span>
                                     </div>
 
-                                    {/* 메인 페이지 첫 줄 "제목 추출" 처리 -  Ver 2026.03.24  */}
-                                    
+                                    {/* 카드 컴포넌트 내부 제목 처리 변경 - Ver 2026.03.31 */}
                                     <div className="flex flex-col gap-1">
-                                        {/*  첫 줄은 굵은 제목으로 처리 */}
-                                        <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100 line-clamp-1 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                            {post.content.split('\n')[0]}
+                                        <CardTitle className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {post.title}
                                         </CardTitle>
-                                        {/*  두 번째 줄부터는 회색 본문으로 처리 */}
-                                        {post.content.split('\n').length > 1 && (
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">
-                                                {post.content.split('\n').slice(1).join(' ').trim()}
-                                            </p>
-                                        )}
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1 mt-1">
+                                            {post.content}
+                                        </p>
                                     </div>
                                 </CardHeader>
 
-                                {/* 카드 컴포넌트 내부 "닉네임", "등급" 노출 - Ver 2026.03.17 */}
+                                {/* 카드 컴포넌트 내부:  닉네임, 등급, 호버 액션 노출 - Ver 2026.03.31 */}
                                 <CardContent className="px-5 pb-5 mt-auto">
                                     <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800/80">
                                         <div className="flex flex-col">
-                                            {/* 🚀 작성자 닉네임 추가 */}
                                             <span className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-0.5 flex items-center">
                                                 {post.writer?.nickname || "익명의 제보자"}
                                                 {post.writer?.role && getRoleBadge(post.writer.role)}
@@ -191,6 +195,7 @@ export default function HomePage() {
                                                 {new Date(post.createdAt!).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                                             </span>
                                         </div>
+                                        {/* ✅ 수정: 호버 시에만 '판결하기 →' 가 나타나는 로직 (opacity-0 -> 100) */}
                                         <span className="text-blue-600 dark:text-blue-400 text-sm font-bold opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all flex items-center">
                                             판결하기 <span className="ml-1">→</span>
                                         </span>

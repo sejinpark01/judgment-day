@@ -15,16 +15,17 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req: R
     try {
         // req.user는 Passport가  JWT 검증을 통과시킨 유저의 정보
         const user = req.user as any;
-        const { videoUrl, category, content, sketchUrl, isVoteEnabled } = req.body;
+        const { title, videoUrl, category, content, sketchUrl, isVoteEnabled } = req.body;
 
         // 1. 필수 데이터 누락 체크
-        if (!videoUrl || !category || !content) {
+        if (!title || !videoUrl || !category || !content) {
             return res.status(400).json({ message: '모든 필드를 입력해주세요.' });
         }
 
         // 2. Prisma를 이용해 DB(post 테이블)에 데이터 저장
         const newPost = await prisma.post.create({
             data: {
+                title, // 제목 추가 Ver 2026.03.31
                 videoUrl,
                 category,
                 content,
@@ -239,16 +240,16 @@ router.post('/:id/vote', voteLimiter, passport.authenticate('jwt', { session: fa
 });
 
 // ====================================================================
-// 🚀 [Ver- 2026.03.18] 게시글 수정 API (PUT)
+// 🚀 [Ver- 2026.03.31] 게시글 수정 API (PUT)
 // ====================================================================
 router.put('/:id', passport.authenticate('jwt', { session: false }), async (req: Request, res: Response): Promise<any> => {
     try {
         const postId = parseInt(req.params.id as string, 10);
         const user = req.user as any;
-        const { category, content, isVoteEnabled } = req.body; // 수정할 데이터 (보통 원본 영상 URL은 수정을 막는 것이 일반적)
+        const { title, category, content, sketchUrl, isVoteEnabled } = req.body; // 수정할 데이터 (원본 영상 URL은 수정을 막음)
 
-        if (!category || !content) {
-            return res.status(400).json({ message: '수정할 카테고리와 내용을 모두 입력해주세요.' });
+        if (!title || !category || !content) { // Ver 2026.03.31 title 체크 추가
+            return res.status(400).json({ message: '수정할 제목, 카테고리와 내용을 모두 입력해주세요.' });
         }
 
         // 1. 게시글이 존재하는지, 그리고 현재 로그인한 유저가 '작성자' 본인이 맞는지 철저히 검증! (보안 핵심)
@@ -259,8 +260,8 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
         // 2. 통과했다면 게시글 업데이트
         const updatedPost = await prisma.post.update({
             where: { id: postId },
-            // ✅ isVoteEnabled 업데이트 로직 추가 - Ver 2026.03.19
-            data: { category, content, isVoteEnabled: isVoteEnabled !== undefined ? isVoteEnabled : true }
+            // ✅ isVoteEnabled 업데이트 로직 추가 - Ver 2026.03.19 // title (제목) 추가 - Ver 2026.03.31
+            data: { title, category, content, sketchUrl, isVoteEnabled: isVoteEnabled !== undefined ? isVoteEnabled : true }
         });
 
         res.status(200).json({
@@ -421,7 +422,7 @@ router.post('/:id/ai-analyze', async (req: Request, res: Response): Promise<any>
 
             [사고 데이터]
             - 사고 카테고리: ${post.category}
-            - 상황 설명: ${post.content}
+            - 상황 설명: [제목: ${post.title}] \n ${post.content}
 
             [엄격한 제약사항]
             1. 사용자의 감정적인 호소나 사고와 무관한 내용은 철저히 무시할 것.
@@ -440,7 +441,7 @@ router.post('/:id/ai-analyze', async (req: Request, res: Response): Promise<any>
               "adviceForWriter": "작성자에게 투표를 돕기 위해 스케치북이나 설명 보완을 권장하는 친절한 1줄 조언"
             }
         `;
-        
+
         // 5. Gemini API 호출 및 통신 대기
         console.log(`🤖 [AI API Call] 게시글 ${postId}번 - Gemini API 최초 분석 요청 중...`);
         const result = await model.generateContent(prompt);

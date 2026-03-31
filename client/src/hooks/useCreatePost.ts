@@ -9,6 +9,7 @@ export function useCreatePost() {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
   const [postData, setPostData] = useState<Partial<IPost>>({
+    title: "", // Ver- 2026.03.31 신규 추가
     videoUrl: "",
     category: "NORMAL", // ✅ 기본값을 일반 사고로 변경
     content: "",
@@ -16,6 +17,7 @@ export function useCreatePost() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null); // ✅ 통신 에러를 담을 상태 추가
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -30,6 +32,14 @@ export function useCreatePost() {
   // 🚀 신규 추가: Toggle 스위치 전용 핸들러 - Ver 2026.03.20
   const handleToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPostData((prev) => ({ ...prev, isVoteEnabled: e.target.checked }));
+  };
+
+  // 2️⃣ 템플릿 적용 함수 신규 추가 - Ver 2026.03.31
+  const handleTemplateApply = () => {
+    setPostData((prev) => ({
+      ...prev,
+      content: "- 사고 발생 위치 (예: 교차로, 스쿨존): \n- 나의 주행 속도 및 상황: \n- 상대방의 특이 행동: \n- 억울한 점: "
+    }));
   };
 
   // 🚀 파라미터에 sketchUrl 추가 (선택적)
@@ -92,5 +102,5 @@ export function useCreatePost() {
     }
   };
 
-  return { postData, handleInputChange, handleCategoryChange, handleToggleChange, handleSubmit, isLoading, error };
+  return { postData, handleInputChange, handleCategoryChange, handleToggleChange, handleTemplateApply, handleSubmit, isLoading, error };
 }

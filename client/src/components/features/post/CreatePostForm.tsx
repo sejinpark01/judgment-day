@@ -23,8 +23,8 @@ import {
 import { AccidentSketchbook, SketchbookRef } from "./AccidentSketchbook";
 
 export function CreatePostForm() {
-  //구조 분해 할당
-  const { postData, handleInputChange, handleCategoryChange, handleToggleChange, handleSubmit, isLoading, error } = useCreatePost();
+  //  구조 분해 할당 Ver 2026.03.31
+  const { postData, handleInputChange, handleCategoryChange, handleToggleChange, handleTemplateApply, handleSubmit, isLoading, error } = useCreatePost();
   const router = useRouter();
 
   // 🚀 스케치북에 접근할 수 있는 리모컨(Ref) 생성
@@ -63,7 +63,7 @@ export function CreatePostForm() {
             />
           </div>
 
-          {/* 카테고리 선택 */}
+          {/* 카테고리 선택 - Ver 2026.03.31 */}
           <div className="space-y-2">
             <Label htmlFor="category">사고 카테고리</Label>
             <Select onValueChange={handleCategoryChange} value={postData.category}>
@@ -77,6 +77,9 @@ export function CreatePostForm() {
                 <SelectItem value="JAYWALKING">🚶 무단횡단 사고</SelectItem>
                 <SelectItem value="RECKLESS_DRIVING">💢 보복/난폭운전</SelectItem>
                 <SelectItem value="SCHOOL_ZONE">🚸 스쿨존 사고</SelectItem>
+                <SelectItem value="FUNNY">🤣 황당/어이없는 사고</SelectItem>
+                <SelectItem value="HEARTWARMING">💖 훈훈한 블랙박스</SelectItem>
+                <SelectItem value="LEGENDARY">😎 레전드 회피</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -98,16 +101,35 @@ export function CreatePostForm() {
             </label>
           </div>
 
-          {/* 상세 설명 */}
+          {/* ✅ 신규: 명시적 제목 입력 칸 - Ver 2026.03.31 */}
+          <div className="space-y-2 pt-2">
+            <Label htmlFor="title">게시글 제목</Label>
+            <Input
+              id="title"
+              name="title"
+              placeholder="게시글의 제목을 입력하세요 (예: 깜빡이 없는 급차선 변경)"
+              value={postData.title}
+              onChange={handleInputChange}
+              required
+              className="bg-muted focus-visible:ring-primary"
+            />
+          </div>
+
+          {/* 상세 설명 및 템플릿 버튼  - Ver 2026.03.31 */}
           <div className="space-y-2">
-            <Label htmlFor="content">상황 설명</Label>
+            <div className="flex justify-between items-end">
+              <Label htmlFor="content">상황 설명</Label>
+              <Button type="button" variant="outline" size="sm" onClick={handleTemplateApply} className="text-xs font-bold border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-400 dark:hover:bg-blue-900/30 transition-colors">
+                ✍️ AI 분석용 템플릿 적용하기
+              </Button>
+            </div>
             <Textarea
               id="content"
               name="content"
-              placeholder={"첫 줄은 게시글의 '제목'으로 표시됩니다.\n이후 당시의 상황을 객관적이고 상세하게 적어주세요."}
+              placeholder="사고 당시의 상황을 객관적이고 상세하게 적어주세요."
               value={postData.content}
               onChange={handleInputChange}
-              className="min-h-[120px] bg-muted focus-visible:ring-primary"
+              className="min-h-[160px] bg-muted focus-visible:ring-primary"
             />
           </div>
 
