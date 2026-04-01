@@ -121,20 +121,7 @@ export default function EditPostPage() {
 
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-6 pt-6">
-
-                        {/* ✅ 신규: 명시적 제목 입력 칸 */}
-                        <div className="space-y-2">
-                            <Label htmlFor="title" className="text-sm font-bold text-slate-700 dark:text-slate-300">게시글 제목</Label>
-                            <Input
-                                id="title"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="게시글의 제목을 입력하세요"
-                                required
-                                className="bg-muted focus-visible:ring-primary"
-                            />
-                        </div>
-
+                        {/* 카테고리 선택 - Ver 2026.04.01 */}
                         <div className="space-y-2">
                             <Label htmlFor="category" className="text-sm font-bold text-slate-700 dark:text-slate-300">사고 유형 (카테고리)</Label>
                             <select
@@ -154,26 +141,22 @@ export default function EditPostPage() {
                                 <option value="HEARTWARMING">💖 훈훈한 블랙박스</option>
                                 <option value="LEGENDARY">😎 레전드 회피</option>
                             </select>
-
-                            {/* 🚀 신규 추가: 투표 활성화/비활성화 토글 UI- Ver 2026.03.20 */}
-                            <div className="flex items-center justify-between space-y-2 p-4 border border-input rounded-lg bg-slate-50 dark:bg-slate-800/50 mt-4">
-                                <div className="space-y-0.5">
-                                    <Label className="text-base font-bold text-slate-700 dark:text-slate-300">투표 활성화</Label>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">다른 사용자들이 과실 비율을 투표할 수 있도록 허용합니다.</p>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="sr-only peer"
-                                        checked={isVoteEnabled}
-                                        onChange={(e) => setIsVoteEnabled(e.target.checked)}
-                                    />
-                                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
                         </div>
 
-                        {/* ✅ 신규: AI 템플릿 버튼 및 분리된 상황 설명 칸 - Ver 2026.03.31 */}
+                        {/* ✅ 신규: 명시적 제목 입력 칸 - Ver 2026.04.01 */}
+                        <div className="space-y-2">
+                            <Label htmlFor="title" className="text-sm font-bold text-slate-700 dark:text-slate-300">게시글 제목</Label>
+                            <Input
+                                id="title"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="게시글의 제목을 입력하세요"
+                                required
+                                className="bg-muted focus-visible:ring-primary"
+                            />
+                        </div>
+
+                        {/* 상세 설명 및 AI 템플릿 버튼  - Ver 2026.03.31 */}
                         <div className="space-y-2">
                             <div className="flex justify-between items-end">
                                 <Label htmlFor="content" className="text-sm font-bold text-slate-700 dark:text-slate-300">당시 상황 설명</Label>
@@ -190,6 +173,24 @@ export default function EditPostPage() {
                                 className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[200px] resize-y"
                             />
                         </div>
+
+                        {/* 🚀 신규 추가: 투표 활성화/비활성화 토글 UI- Ver 2026.03.20 */}
+                        <div className="flex items-center justify-between space-y-2 p-4 border border-input rounded-lg bg-slate-50 dark:bg-slate-800/50 mt-4">
+                            <div className="space-y-0.5">
+                                <Label className="text-base font-bold text-slate-700 dark:text-slate-300">투표 활성화</Label>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">다른 사용자들이 과실 비율을 투표할 수 있도록 허용합니다. (단순 제보 시 해제)</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={isVoteEnabled}
+                                    onChange={(e) => setIsVoteEnabled(e.target.checked)}
+                                />
+                                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-500 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-500"></div>
+                            </label>
+                        </div>
+
                         {/* ✅ [Ver 2026.03.18 - Q2]: 부모 컴포넌트 수정 - 대망의 도화지 연결! */}
                         <div className="space-y-2 pt-4 border-t border-slate-200 dark:border-slate-800">
                             <div className="space-y-0.5 mb-4">
