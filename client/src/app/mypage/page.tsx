@@ -1,4 +1,5 @@
 // client/src/app/mypage/page.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, ShieldCheck, History, Trophy, Lock, BarChart3, Info, X, MessageCircle } from "lucide-react";
+import { User, ShieldCheck, History, Trophy, Lock, BarChart3, Info, X, MessageCircle, Pencil, Eye } from "lucide-react";
 // 🚀 Recharts 임포트 (데이터 시각화) - Ver 2026.03.24
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 
@@ -83,10 +84,12 @@ export default function MyPage() {
 
             const data = await res.json();
             if (res.ok) {
-                alert("비밀번호가 성공적으로 변경되었습니다.");
-                // 🚀 성공 시 모달 닫기 및 초기화
+                // 🚀 성공 시 강제 로그아웃 및 로그인 페이지로 리다이렉트 - Ver 2026.04.01
+                alert("비밀번호가 성공적으로 변경되었습니다. 안전을 위해 다시 로그인해 주세요.");
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
                 setIsPasswordModalOpen(false);
-                setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+                router.push("/login");
             } else {
                 alert(data.message);
             }
@@ -265,6 +268,43 @@ export default function MyPage() {
                         </CardContent>
                     </Card>
 
+                    {/* 🚀 신규: 내가 작성한 글 영역 - Ver 2026.04.01 */}
+                    <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 h-full mb-8">
+                        <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                            <CardTitle className="text-xl flex items-center gap-2">
+                                <Pencil className="w-5 h-5 text-emerald-500" /> 내가 작성한 게시글
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 max-h-[350px] overflow-y-auto">
+                            {profile.posts && profile.posts.length === 0 ? (
+                                <div className="text-center py-8 text-slate-500">
+                                    <p>아직 작성한 사고 제보글이 없습니다.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {profile.posts && profile.posts.map((post: any) => (
+                                        <Link href={`/post/${post.id}`} key={post.id} className="block group">
+                                            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col sm:flex-row justify-between gap-4">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        {getCategoryBadge(post.category)}
+                                                        <span className="text-xs text-slate-400">{new Date(post.createdAt).toLocaleDateString('ko-KR')}</span>
+                                                    </div>
+                                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-emerald-500 transition-colors">
+                                                        {post.title}
+                                                    </h4>
+                                                </div>
+                                                <div className="shrink-0 flex items-center justify-end sm:justify-start gap-4">
+                                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Eye className="w-3 h-3" /> {post.views}</span>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
                     {/* 기존 투표 기록 영역 */}
                     <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 h-full">
                         <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
@@ -289,7 +329,7 @@ export default function MyPage() {
                                                         <span className="text-xs text-slate-400">{new Date(vote.createdAt).toLocaleDateString('ko-KR')}</span>
                                                     </div>
                                                     <h4 className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-blue-500 transition-colors">
-                                                        {vote.post.content.split('\n')[0]}
+                                                        {vote.post.title} {/* ✅ 내용 대신 제목 렌더링 - Ver 2026.04.01 */}
                                                     </h4>
                                                 </div>
                                                 <div className="shrink-0 flex items-center justify-end sm:justify-start gap-4 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg">

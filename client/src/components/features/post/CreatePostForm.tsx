@@ -65,7 +65,7 @@ export function CreatePostForm() {
 
           {/* 카테고리 선택 - Ver 2026.03.31 */}
           <div className="space-y-2">
-            <Label htmlFor="category">사고 카테고리</Label>
+            <Label htmlFor="category">사고 유형 (카테고리)</Label>
             <Select onValueChange={handleCategoryChange} value={postData.category}>
               <SelectTrigger className="w-full bg-muted">
                 <SelectValue placeholder="사고 유형을 선택해주세요" />
@@ -84,23 +84,6 @@ export function CreatePostForm() {
             </Select>
           </div>
 
-          {/* 🚀 신규 추가: 투표 활성화/비활성화 토글 UI - Ver 2026.03.20 */}
-          <div className="flex items-center justify-between space-y-2 p-4 border border-border rounded-lg bg-muted/30">
-            <div className="space-y-0.5">
-              <Label className="text-base font-bold text-foreground">투표 활성화</Label>
-              <p className="text-sm text-muted-foreground">다른 사용자들이 과실 비율을 투표할 수 있도록 허용합니다. (단순 제보 시 해제)</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={postData.isVoteEnabled}
-                onChange={handleToggleChange}
-              />
-              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
           {/* ✅ 신규: 명시적 제목 입력 칸 - Ver 2026.03.31 */}
           <div className="space-y-2 pt-2">
             <Label htmlFor="title">게시글 제목</Label>
@@ -115,7 +98,7 @@ export function CreatePostForm() {
             />
           </div>
 
-          {/* 상세 설명 및 템플릿 버튼  - Ver 2026.03.31 */}
+          {/* 상세 설명 및 AI 템플릿 버튼  - Ver 2026.03.31 */}
           <div className="space-y-2">
             <div className="flex justify-between items-end">
               <Label htmlFor="content">상황 설명</Label>
@@ -133,7 +116,24 @@ export function CreatePostForm() {
             />
           </div>
 
-          {/* 🎨 대망의 스케치북 컴포넌트 부착 */}
+          {/* 🚀 신규 추가: 투표 활성화/비활성화 토글 UI - Ver 2026.04.01 (다크모드 시인성 개선) */}
+          <div className="flex items-center justify-between space-y-2 p-4 border border-border rounded-lg bg-muted/30">
+            <div className="space-y-0.5">
+              <Label className="text-base font-bold text-foreground">투표 활성화</Label>
+              <p className="text-sm text-muted-foreground">다른 사용자들이 과실 비율을 투표할 수 있도록 허용합니다. (단순 제보 시 해제)</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={postData.isVoteEnabled}
+                onChange={handleToggleChange}
+              />
+              <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-500 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-500"></div>
+            </label>
+          </div>
+
+          {/* 🎨 스케치북 컴포넌트 부착 */}
           <div className="space-y-2 pt-4 border-t border-border">
             <AccidentSketchbook ref={sketchbookRef} />
           </div>

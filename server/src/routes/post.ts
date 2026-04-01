@@ -459,7 +459,7 @@ router.post('/:id/ai-analyze', async (req: Request, res: Response): Promise<any>
               "predictedPrecedent": "예: 70:30 (블랙박스:상대방 기준), 정보 부족으로 산정 불가, 혹은 판결 면제 등",
               "summary": "사고 상황에 대한 객관적 요약 1줄",
               "keyIssues": [
-                "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 1
+                "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 1",
                 "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 2"
               ],
               "adviceForWriter": "작성자에게 투표를 돕기 위한 조언이나 따뜻한 격려 1줄"
