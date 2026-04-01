@@ -6,6 +6,7 @@ import prisma from '../lib/prisma';
 import redisClient from '../lib/redis'; // ✅ Redis 불러오기 - Ver 2026.03.11
 import { voteLimiter } from '../middlewares/rateLimiter'; // Redis로 Rate Limiting(요청 제한) - Ver 2026.03.27
 import { GoogleGenerativeAI } from '@google/generative-ai'; // 🤖 Gemini 패키지 추가 - Ver 2026.03.30
+import { Prisma } from '@prisma/client'; // ✅ Prisma 객체를 임포트 - Ver 2026.04.01
 
 const router = Router();
 
@@ -261,7 +262,7 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req:
         const updatedPost = await prisma.post.update({
             where: { id: postId },
             // ✅ isVoteEnabled 업데이트 로직 추가 - Ver 2026.03.19 // title (제목) 추가 - Ver 2026.03.31
-            data: { title, category, content, sketchUrl, isVoteEnabled: isVoteEnabled !== undefined ? isVoteEnabled : true }
+            data: { title, category, content, sketchUrl, isVoteEnabled: isVoteEnabled !== undefined ? isVoteEnabled : true, aiSummary: Prisma.DbNull }
         });
 
         res.status(200).json({
@@ -415,30 +416,53 @@ router.post('/:id/ai-analyze', async (req: Request, res: Response): Promise<any>
             generationConfig: { responseMimeType: "application/json" } // 👈 2.5 버전은 JSON을 완벽 지원하므로 주석 해제!
         });
 
-        // 4. 🧠 프롬프트 엔지니어링 (System Prompt + User Data)
+        // 4. 🧠 프롬프트 엔지니어링 (System Prompt 동적 분기 처리 + User Data - Ver 2026.04.01)
+        let dynamicPrompt = "";
+
+        // ✅ [분기 1] 엔터테인먼트 카테고리 (유머/감동/레전드)
+        if (['FUNNY', 'HEARTWARMING', 'LEGENDARY'].includes(post.category)) {
+            dynamicPrompt = `
+                너는 교통사고 커뮤니티의 유쾌하고 따뜻한 AI 소통관이야.
+                이 게시글은 과실 비율을 따지는 심각한 글이 아니라, 유저들이 재미와 감동을 나누는 '${post.category}' 카테고리 글이야.
+                
+                [엄격한 제약사항]
+                1. 과실 비율을 산정하지 말고 "predictedPrecedent"에 반드시 "판결 면제! 👏" (혹은 카테고리에 맞는 재치있는 한마디)라고 적을 것.
+                2. "summary"에는 해당 영상/글의 웃음 포인트나 감동 포인트를 1줄로 요약할 것.
+                3. "keyIssues"에는 유저들이 영상을 볼 때 주목해야 할 관전 포인트(예: 뛰어난 반사신경, 훈훈한 양보 등)를 적어줄 것.
+                4. "adviceForWriter"에는 작성자에게 안전운전을 격려하거나 재미있는 위트 있는 멘트를 남길 것.
+            `;
+        }
+        // ✅ [분기 2] 일반 사고 카테고리 (기존 로직)
+        else {
+            dynamicPrompt = `
+                너는 10년 경력의 냉철하고 객관적인 교통사고 전문 AI 분석관이야.
+                아래 제공되는 [사고 카테고리]와 [사용자의 상황 설명]을 바탕으로, 도로교통법 판례에 근거한 객관적인 과실 비율 가이드라인을 제시해 줘.
+
+                 [엄격한 제약사항]
+          	      1. 사용자의 감정적인 호소나 사고와 무관한 내용은 철저히 무시할 것.
+                  2. 인사말이나 부연 설명 절대 금지.
+                  3. 정보가 너무 부족하여(예: 상대방이 보행자인지 차량인지 불분명 등) 도저히 과실 비율을 추정할 수 없는 경우, 억지로 숫자를 지어내지 말고 "predictedPrecedent"에 "정보 부족으로 산정 불가"라고 명시할 것.
+                  4. 반드시 제공된 JSON 스키마 규격에 맞춰서 응답할 것.
+            `;
+        }
+
+        // 공통 프롬프트 조립
         const prompt = `
-            너는 10년 경력의 냉철하고 객관적인 교통사고 전문 AI 분석관이야.
-            아래 제공되는 [사고 카테고리]와 [사용자의 상황 설명]을 바탕으로, 도로교통법 판례에 근거한 객관적인 과실 비율 가이드라인을 제시해 줘.
+            ${dynamicPrompt}
 
             [사고 데이터]
             - 사고 카테고리: ${post.category}
             - 상황 설명: [제목: ${post.title}] \n ${post.content}
 
-            [엄격한 제약사항]
-            1. 사용자의 감정적인 호소나 사고와 무관한 내용은 철저히 무시할 것.
-            2. 인사말이나 부연 설명 절대 금지.
-            3. 정보가 너무 부족하여(예: 상대방이 보행자인지 차량인지 불분명 등) 도저히 과실 비율을 추정할 수 없는 경우, 억지로 숫자를 지어내지 말고 "predictedPrecedent"에 "정보 부족으로 산정 불가"라고 명시할 것.
-            4. 반드시 제공된 JSON 스키마 규격에 맞춰서 응답할 것.
-
             [응답 JSON 스키마]
             {
-              "predictedPrecedent": "예: 70:30 또는 정보 부족으로 산정 불가",
+              "predictedPrecedent": "예: 70:30 (블랙박스:상대방 기준), 정보 부족으로 산정 불가, 혹은 판결 면제 등",
               "summary": "사고 상황에 대한 객관적 요약 1줄",
               "keyIssues": [
-                "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 1",
+                "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 1
                 "투표자들이 영상을 볼 때 중점적으로 확인해야 할 쟁점 2"
               ],
-              "adviceForWriter": "작성자에게 투표를 돕기 위해 스케치북이나 설명 보완을 권장하는 친절한 1줄 조언"
+              "adviceForWriter": "작성자에게 투표를 돕기 위한 조언이나 따뜻한 격려 1줄"
             }
         `;
 

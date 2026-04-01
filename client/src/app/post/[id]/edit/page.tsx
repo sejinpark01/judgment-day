@@ -74,11 +74,8 @@ export default function EditPostPage() {
         setIsSubmitting(true);
         const token = localStorage.getItem('token');
 
-        // ✅ 수정 로직: 캔버스에 새로 그린 그림이 있는지 확인
-        const newSketch = sketchbookRef.current?.exportImage() || null;
-
         // 새로 그린 그림이 있으면 그것을 쓰고, 안 그렸으면 기존 그림(existingSketch)을 그대로 유지!
-        const finalSketchUrl = newSketch ? newSketch : existingSketch;
+        const finalSketchUrl = sketchbookRef.current?.exportImage() || null;
         try {
             const res = await fetch(`${API_BASE_URL}/api/posts/${postId}`, {
                 method: 'PUT',
@@ -193,24 +190,18 @@ export default function EditPostPage() {
                                 className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[200px] resize-y"
                             />
                         </div>
-
-                        {/* ✅ 기존 스케치 출력 및 새로운 스케치북 Ver 2026.03.31 */}
+                        {/* ✅ [Ver 2026.03.18 - Q2]: 부모 컴포넌트 수정 - 대망의 도화지 연결! */}
                         <div className="space-y-2 pt-4 border-t border-slate-200 dark:border-slate-800">
                             <div className="space-y-0.5 mb-4">
                                 <Label className="text-base font-bold text-slate-700 dark:text-slate-300">사고 현장 스케치북 수정 (선택)</Label>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">아래 캔버스에 새롭게 스케치를 그리면 기존 스케치를 덮어씁니다. 그리지 않으면 기존 스케치가 유지됩니다.</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">새롭게 스케치를 그리면 기존 스케치를 덮어씁니다. 그리지 않으면 기존 스케치가 유지됩니다.</p>
                             </div>
 
-                            {/* 🚀 기존에 그린 스케치가 있다면 미리 보여주기! */}
-                            {existingSketch && (
-                                <div className="mb-6 p-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/30">
-                                    <p className="text-xs font-bold text-slate-500 mb-2">📌 현재 저장된 스케치</p>
-                                    <img src={existingSketch} alt="기존 스케치" className="w-full max-w-lg mx-auto border border-slate-200 dark:border-slate-700 rounded bg-white" />
-                                </div>
-                            )}
-
-                            {/* 새로운 스케치를 그릴 수 있는 도화지 */}
-                            <AccidentSketchbook ref={sketchbookRef} />
+                            {/* 🚀 🚨 핵심: 도화지 컴포넌트 부착 시 initialImage props에 기존 스케치 데이터(Base64)를 던져줍니다! */}
+                            <AccidentSketchbook
+                                ref={sketchbookRef}
+                                initialImage={existingSketch} // ✅ DB에서 가져온 Base64 데이터
+                            />
                         </div>
                     </CardContent>
 
