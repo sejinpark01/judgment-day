@@ -114,12 +114,12 @@ export default function MyPage() {
         }
     };
 
-    // 🚀 MBTI 칭호에 따른 예쁜 색상/이모지 반환 헬퍼 함수 - Ver 2026.03.24
+   // 🚀 MBTI 칭호에 따른 예쁜 색상/이모지 반환 헬퍼 함수 - Ver 2026.04.02
     const getMbtiBadge = (type: string) => {
         switch (type) {
-            case '엄격한 심판관': return <span className="text-red-600 dark:text-red-400 font-black">🧑‍⚖️ 엄격한 심판관</span>;
-            case '블박차 빙의': return <span className="text-emerald-600 dark:text-emerald-400 font-black">😇 블박차 빙의</span>;
-            case '예측불허 갈대': return <span className="text-purple-600 dark:text-purple-400 font-black">🌪️ 예측불허 갈대</span>;
+            case '무자비한 심판관': return <span className="text-red-600 dark:text-red-400 font-black">🧑‍⚖️ 무자비한 심판관</span>; // 🚨 case 변경
+            case '맹목적 블박 쉴더': return <span className="text-emerald-600 dark:text-emerald-400 font-black">😇 맹목적 블박 쉴더</span>; // 🚨 case 변경
+            case '청개구리 트롤러': return <span className="text-purple-600 dark:text-purple-400 font-black">🌪️ 청개구리 트롤러</span>; // 🚨 case 변경
             default: return <span className="text-blue-600 dark:text-blue-400 font-black">⚖️ 객관적 솔로몬</span>;
         }
     };
@@ -128,14 +128,14 @@ export default function MyPage() {
     if (!profile) return null;
 
     return (
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+        <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
             <h1 className="text-3xl font-extrabold mb-8 text-slate-900 dark:text-white flex items-center gap-3">
                 <User className="w-8 h-8 text-blue-600" /> 마이페이지
             </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
                 {/* 👈 왼쪽: 프로필 및 보안 영역 */}
-                <div className="space-y-8 md:col-span-1">
+                <div className="space-y-8 lg:col-span-3 xl:col-span-3">
                     <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900">
                         <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-center pb-8 pt-8">
                             <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/50 rounded-full mx-auto flex items-center justify-center mb-4 shadow-inner">
@@ -197,10 +197,10 @@ export default function MyPage() {
                     </Card>
                 </div>
 
-                {/* 👉 오른쪽: 투표 MBTI 차트 및 기록 영역 - Ver 2026.04.01 */}
-                <div className="md:col-span-2 flex flex-col gap-8">
+                {/* 👉 오른쪽: 투표 MBTI 차트 및 기록 영역 - Ver 2026.04.02 */}
+                <div className="lg:col-span-9 xl:col-span-9 flex flex-col gap-8">
 
-                    {/* 운전 MBTI 방사형 차트 영역 - Ver 2026.04.01 */}
+                    {/* 운전 MBTI 방사형 차트 영역 - Ver 2026.04.02 */}
                     <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 overflow-visible">
                         <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
                             <div>
@@ -216,13 +216,13 @@ export default function MyPage() {
                                     <Info className="w-5 h-5" />
                                 </div>
                                 {/* 툴팁 본문 */}
-                                <div className="absolute right-0 top-10 w-72 p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+                                <div className="absolute right-0 top-10 w-max min-w-[340px] p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
                                     <p className="font-extrabold text-sm mb-2 text-slate-800 dark:text-slate-200">💡 운전 MBTI란?</p>
                                     <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                                        <li><strong className="text-red-500">🧑‍⚖️ 엄격한 심판관:</strong> 대중보다 블박차에게 엄격하게 과실을 묻는 성향</li>
-                                        <li><strong className="text-emerald-500">😇 블박차 빙의:</strong> 대중보다 블박차에게 관대하게 과실을 묻는 성향</li>
-                                        <li><strong className="text-blue-500">⚖️ 객관적 솔로몬:</strong> 대중의 평균과 매우 일치하는 성향</li>
-                                        <li><strong className="text-purple-500">🌪️ 예측불허 갈대:</strong> 판결의 일관성이 다소 부족한 성향</li>
+                                        <li><strong className="text-red-500">🧑‍⚖️ 무자비한 심판관:</strong> 대중의 의견과 상관없이 무조건 블박차의 과실을 높게 잡는 깐깐한 성향</li>
+                                        <li><strong className="text-emerald-500">😇 맹목적 블박 쉴더:</strong> 대중의 의견과 상관없이 무조건 블박차의 편만 들어주는 방어적 성향</li>
+                                        <li><strong className="text-blue-500">⚖️ 객관적 솔로몬:</strong> 대중의 평균 판결과 거의 100% 일치하는 정확하고 객관적인 성향</li>
+                                        <li><strong className="text-purple-500">🌪️ 청개구리 트롤러:</strong> 대중과도 맞지 않고, 본인의 일관성도 없이 기분따라 판결하는 성향</li>
                                     </ul>
                                 </div>
                             </div>
