@@ -89,7 +89,7 @@ export default function MyPage() {
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
                 setIsPasswordModalOpen(false);
-                router.push("/login");
+                window.location.href = "/login";
             } else {
                 alert(data.message);
             }
@@ -197,10 +197,10 @@ export default function MyPage() {
                     </Card>
                 </div>
 
-                {/* 👉 오른쪽: 투표 MBTI 차트 및 기록 영역 */}
-                <div className="md:col-span-2 space-y-8">
+                {/* 👉 오른쪽: 투표 MBTI 차트 및 기록 영역 - Ver 2026.04.01 */}
+                <div className="md:col-span-2 flex flex-col gap-8">
 
-                    {/* 🚀 신규: 운전 MBTI 방사형 차트 영역 -Ver 2026.03.24 */}
+                    {/* 운전 MBTI 방사형 차트 영역 - Ver 2026.04.01 */}
                     <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 overflow-visible">
                         <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
                             <div>
@@ -268,120 +268,124 @@ export default function MyPage() {
                         </CardContent>
                     </Card>
 
-                    {/* 🚀 신규: 내가 작성한 글 영역 - Ver 2026.04.01 */}
-                    <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 h-full mb-8">
-                        <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <Pencil className="w-5 h-5 text-emerald-500" /> 내가 작성한 게시글
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6 max-h-[350px] overflow-y-auto">
-                            {profile.posts && profile.posts.length === 0 ? (
-                                <div className="text-center py-8 text-slate-500">
-                                    <p>아직 작성한 사고 제보글이 없습니다.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {profile.posts && profile.posts.map((post: any) => (
-                                        <Link href={`/post/${post.id}`} key={post.id} className="block group">
-                                            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-400 hover:shadow-md transition-all flex flex-col sm:flex-row justify-between gap-4">
-                                                <div className="flex-1">
+                    {/* 🚀 하단: 리스트 영역을 Grid로 반반(1:1) 나누어 나란히 배치! */}
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+                        {/* 📝 좌측 하단: 내가 작성한 글 영역 - Ver 2026.04.01 */}
+                        <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 flex flex-col max-h-[500px]">
+                            <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                                <CardTitle className="text-xl flex items-center gap-2">
+                                    <Pencil className="w-5 h-5 text-emerald-500" /> 내가 작성한 글
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 flex-1 overflow-y-auto custom-scrollbar">
+                                {!profile.posts || profile.posts.length === 0 ? (
+                                    <div className="text-center py-12 text-slate-500 flex flex-col items-center justify-center h-full">
+                                        <Pencil className="w-10 h-10 mb-3 text-slate-300 opacity-50" />
+                                        <p>작성한 제보글이 없습니다.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {profile.posts && profile.posts.map((post: any) => (
+                                            <Link href={`/post/${post.id}`} key={post.id} className="block group">
+                                                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-emerald-400 hover:shadow-md transition-all">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         {getCategoryBadge(post.category)}
-                                                        <span className="text-xs text-slate-400">{new Date(post.createdAt).toLocaleDateString('ko-KR')}</span>
+                                                        <span className="text-[10px] text-slate-400">{new Date(post.createdAt).toLocaleDateString('ko-KR')}</span>
                                                     </div>
-                                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-emerald-500 transition-colors">
+                                                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-emerald-500 transition-colors mb-2">
                                                         {post.title}
                                                     </h4>
+                                                    <div className="flex justify-end">
+                                                        <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+                                                            <Eye className="w-3 h-3" /> {post.views}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="shrink-0 flex items-center justify-end sm:justify-start gap-4">
-                                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Eye className="w-3 h-3" /> {post.views}</span>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                    {/* 기존 투표 기록 영역 */}
-                    <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 h-full">
-                        <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                            <CardTitle className="text-xl flex items-center gap-2">
-                                <History className="w-5 h-5 text-blue-500" /> 내 판결 기록
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            {profile.votes.length === 0 ? (
-                                <div className="text-center py-12 text-slate-500">
-                                    <ShieldCheck className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-                                    <p>아직 참여한 판결이 없습니다.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {profile.votes.map((vote: any) => (
-                                        <Link href={`/post/${vote.post.id}`} key={vote.id} className="block group">
-                                            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-blue-400 hover:shadow-md transition-all flex flex-col sm:flex-row justify-between gap-4">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        {getCategoryBadge(vote.post.category)}
-                                                        <span className="text-xs text-slate-400">{new Date(vote.createdAt).toLocaleDateString('ko-KR')}</span>
+                        {/* ⚖️ 우측 하단: 내 판결 기록 영역  - Ver 2026.04.01 */}
+                        <Card className="shadow-md border-0 ring-1 ring-slate-200 dark:ring-slate-800 flex flex-col max-h-[500px]">
+                            <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                                <CardTitle className="text-xl flex items-center gap-2">
+                                    <History className="w-5 h-5 text-blue-500" /> 내 판결 기록
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 flex-1 overflow-y-auto custom-scrollbar">
+                                {profile.votes.length === 0 ? (
+                                    <div className="text-center py-12 text-slate-500 flex flex-col items-center justify-center h-full">
+                                        <ShieldCheck className="w-10 h-10 mb-3 text-slate-300 opacity-50" />
+                                        <p>참여한 판결이 없습니다.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {profile.votes.map((vote: any) => (
+                                            <Link href={`/post/${vote.post.id}`} key={vote.id} className="block group">
+                                                <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-blue-400 hover:shadow-md transition-all flex justify-between items-center gap-3">
+                                                    <div className="flex-1 overflow-hidden">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            {getCategoryBadge(vote.post.category)}
+                                                            <span className="text-[10px] text-slate-400">{new Date(vote.createdAt).toLocaleDateString('ko-KR')}</span>
+                                                        </div>
+                                                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-blue-500 transition-colors">
+                                                            {vote.post.title}  {/* ✅ 내용 대신 제목 렌더링 - Ver 2026.04.01 */}
+                                                        </h4>
                                                     </div>
-                                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-blue-500 transition-colors">
-                                                        {vote.post.title} {/* ✅ 내용 대신 제목 렌더링 - Ver 2026.04.01 */}
-                                                    </h4>
-                                                </div>
-                                                <div className="shrink-0 flex items-center justify-end sm:justify-start gap-4 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg">
-                                                    <div className="text-center">
-                                                        <p className="text-[10px] text-slate-500 font-bold mb-0.5">내 판결</p>
-                                                        <p className="text-sm font-extrabold text-blue-600">{vote.myFault} <span className="text-slate-400 font-normal">:</span> {vote.opponentFault}</p>
+                                                    <div className="shrink-0 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                        <p className="text-[9px] text-center text-slate-500 font-bold mb-0.5">내 판결</p>
+                                                        <p className="text-xs font-extrabold text-blue-600 whitespace-nowrap">{vote.myFault} <span className="text-slate-400 font-normal">:</span> {vote.opponentFault}</p>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
-
             {/* 🚀 비밀번호 변경 모달(Modal) 창 - Ver 2026.03.24 */}
-            {isPasswordModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <Card className="w-full max-w-sm shadow-2xl border-0 ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900">
-                        <CardHeader className="flex flex-row justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Lock className="w-5 h-5 text-slate-500" /> 비밀번호 변경
-                            </CardTitle>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsPasswordModalOpen(false)}>
-                                <X className="w-4 h-4" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <form onSubmit={handlePasswordChange} className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <Label>현재 비밀번호</Label>
-                                    <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>새 비밀번호</Label>
-                                    <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>새 비밀번호 확인</Label>
-                                    <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                                </div>
-                                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 font-bold mt-2">
-                                    변경 완료
+            {
+                isPasswordModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                        <Card className="w-full max-w-sm shadow-2xl border-0 ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900">
+                            <CardHeader className="flex flex-row justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Lock className="w-5 h-5 text-slate-500" /> 비밀번호 변경
+                                </CardTitle>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsPasswordModalOpen(false)}>
+                                    <X className="w-4 h-4" />
                                 </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-        </div>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <form onSubmit={handlePasswordChange} className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label>현재 비밀번호</Label>
+                                        <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label>새 비밀번호</Label>
+                                        <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label>새 비밀번호 확인</Label>
+                                        <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                                    </div>
+                                    <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-700 font-bold mt-2">
+                                        변경 완료
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
+        </div >
     );
 }
