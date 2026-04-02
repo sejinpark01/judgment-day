@@ -18,6 +18,7 @@
 |Data Management| **MySQL** (Relational), **Prisma** (ORM), **Redis** (Caching)|
 | Backend | **Node.js** (Express), **TypeScript**, **Socket.io** (WebSocket & Real-time), http |
 | Frontend | **Next.js** (App Router), **TypeScript**, React(React Hooks), **Recharts/Chart.js** (Data Visualization), Fetch API |
+| AI Integration | **@google/generative-ai** (Gemini 2.5 Flash) |
 | Auth & Security | **Passport.js** (Kakao, Google, JWT Strategy), bcrypt, CORS, **express-rate-limit**, **rate-limit-redis** |
 | Styling | **Tailwind CSS**, shadcn/ui, Lucide Icons |
 | Core APIs | YouTube Iframe API (seekTo, getCurrentTime, playVideo), HTML5 Canvas API (getContext('2d')) |
@@ -59,16 +60,15 @@
 - **Tech Spec:**
     - `next-themes`와 `Tailwind CSS`을 기반으로 개발한, 전역 다크모드 및 반응형 카드 호버 애니메이션
 
-### G: 📊 나의 판결 성향 분석 (운전 MBTI)    
+### G: 📊 나의 판결 성향 분석 (운전 MBTI 2.0)    
 - **User Story:** "나는 단순히 투표 기록을 보는 것을 넘어, 남들과 비교했을 때 내 과실 판단 성향이 얼마나 객관적인지(혹은 편향되었는지) 분석된 시각화 데이터를 보고 싶다." 
 - **Tech Spec:**
  - **Backend (Prisma & Node.js):**
-    - 유저가 투표를 제출할 때마다 해당 게시글의 현재 평균 과실 비율과 유저의 투표 비율 차이를 계산하여 `UserDeviation` 테이블(또는 `User` 테이블의 누적 필드)에 업데이트.
-    - Prisma의 `aggregate` 쿼리를 활용해 특정 유저의 평균 편차값 추출 API 구현.
- - **Frontend (Next.js & Chart.js / Recharts):**
-    - 마이페이지 로드 시 API를 호출하여 편차 데이터를 수신.
-    - 수신된 데이터를 기반으로 방사형 차트(Radar Chart) 또는 양방향 막대그래프(Bar Chart) 렌더링.
-    - 도출된 MBTI 유형에 따른 재미있는 칭호 배지(Badge) UI 제공.
+    - 별도의 통계 테이블을 두지 않고, 마이페이지 진입 시 Prisma `groupBy` 쿼리를 활용해 '게시글 대중 평균 과실'과 '나의 투표 비율'을 실시간(On-the-fly)으로 비교 분석함.
+    - 단순 편차의 맹점(트롤링)을 방어하기 위해 **'대중 일치율(Match Rate)'과 '나의 절대 투표 성향(Bias)'을 교차 검증**하여 4가지 페르소나(무자비한 심판관, 객관적 솔로몬, 맹목적 블박 쉴더, 청개구리 트롤러)로 정확히 분류함.
+ - **Frontend (Next.js & Recharts):**
+    - 마이페이지 로드 시 API를 호출하여 도출된 4가지 핵심 스탯(엄격함, 객관성, 관대함, 일관성) 수신.
+    - 수신된 데이터를 기반으로 Recharts를 활용해 방사형 차트(Radar Chart)를 렌더링하고 맞춤형 칭호 뱃지 및 설명 툴팁 제공.
 
 ### H: 🔔 내 활동 실시간 알림 (Notification)  
 - **User Story:** "나는 내가 올린 블랙박스 영상에 누군가 새로운 투표를 하거나 원인 분석 댓글을 달았을 때, 새로고침 없이 즉각적으로 알림을 받고 싶다."
@@ -92,7 +92,20 @@
 - **User Story:** "악성 유저나 매크로 봇이 무차별적으로 투표를 조작하거나 내 계정을 해킹하지 못하도록 서비스가 안전하게 보호해 줬으면 좋겠다."
 - **Tech Spec:**
     - 다중 서버(Scale-out) 환경 동기화를 위한 Redis 인메모리 기반 Rate Limiting 미들웨어 적용.
-    - 로그인 무차별 대입 공격(15분/5회) 및 투표 매크로/DDoS 도배(1분/10회) 원천 차단 (HTTP 429 반환).    
+    - 로그인 무차별 대입 공격(15분/5회) 및 투표 매크로/DDoS 도배(1분/10회) 원천 차단 (HTTP 429 반환).
+
+### K: 🤖 AI 판사 (AI Judge) 1차 사고 분석
+- **User Story:** "나는 사고 영상을 보고 사람들의 의견을 듣기 전에, 객관적인 AI의 1차 과실 비율 예측과 핵심 쟁점 요약을 먼저 확인하고 싶다."
+- **Tech Spec:**
+    - `@google/generative-ai`를 활용한 Gemini 2.5 Flash API 연동 및 프롬프트 엔지니어링.
+    - 토큰 낭비 방지를 위해 DB(`aiSummary` 컬럼)에 JSON 형태로 최초 1회 결과 캐싱.
+    - 게시글 수정 시 `Prisma.DbNull`을 이용한 캐시 무효화(Invalidation) 로직 적용.
+
+### L: 🎨 UI 상태 관리 및 컴포넌트 최적화
+- **User Story:** "게시글을 작성하거나 수정할 때 화면이 일관되고, 마이페이지에서 내 기록을 한눈에 깔끔하게 보고 싶다."
+- **Tech Spec:**
+    - 마이페이지 12-Column Grid 시스템(`grid-cols-12`) 및 내부 스크롤 적용으로 방대한 데이터 렌더링 최적화.
+    - 사고 스케치북(`AccidentSketchbook`)에 `hasDrawn` 상태를 도입하여, 미사용 시 투명 배경(`null`) 반환 및 `initialImage`를 통한 기존 캔버스 데이터 복원 로직 고도화.       
 
 ## 4. Coding Rules & Guidelines
 ### General Principles
@@ -121,19 +134,21 @@
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
 - [x] **Phase 5: Polish & UI/UX** (히어로 배너, 카드 호버, 카테고리 뱃지, 다크모드 시스템 구축)
-- [ ] **Phase 6: Feature Enhancement**
+- [ ] **Phase 6: Feature Enhancement & Stabilization**
     - **인터페이스 최적화:** UI 플로팅(Sticky) 적용 및 쇼츠 영상 뷰 최적화
     - **UX 고도화:** 메인 페이지 카테고리(6대 사고 유형) 필터링 및 정렬(최신/인기순) 추가
     - **데이터 동기화:** 실시간 조회수 및 작성자 닉네임(User.nickname) 연동
     - **커뮤니티 기능:** 게시글 수정/삭제, 댓글 시스템, 투표 토글 옵션, 마이 페이지 구현
     - **나의 판결 성향 분석 (운전 MBTI):** 사용자 투표 데이터를 대중 평균 투표율과 비교·분석하여 방사형 차트(Radar Chart)로 시각화하고 맞춤형 칭호 부여.
     - **1:1 실시간 활동 알림:** Socket.io 고유 Room을 활용한 타겟팅 통신으로, 내 게시글의 새로운 반응(투표/댓글)을 새로고침 없이 즉각적으로 수신.
-    - **특화 기능 (AI, 타사인증, 보안):** AI 판사(my-traffic-judge) 연동, OAuth 소셜 로그인 (카카오 / 구글), Redis Rate Limit 보안 강화
+    - **UX/UI 정규화:** 게시글 작성/수정 폼 렌더링 일관성 확보 및 다크모드 툴팁 시인성 개선
+    - **운전 MBTI 2.0:** 대중 일치율(Match Rate)과 절대 성향(Bias)을 교차 검증하는 알고리즘 전면 개편 및 12-Grid 대시보드 구축 (내가 작성한 글 목록 추가)
+    - **특화 기능 (AI, 타사인증, 보안):** AI 판사(Gemini 2.5 Flash) 캐싱 연동, OAuth 소셜 로그인(카카오/구글), Redis Rate Limit 보안 방어망 구축 완료.
 - [ ] **Phase 7: Deploy**
     - **인프라 및 배포:** GitHub Actions 기반 CI/CD 자동화 배포 파이프라인 구축 및 AWS EC2 + 클라우드 DB 연동
     
     
-    
+
 ## **7. 📂 File structure -** Ver 1.11.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
@@ -164,7 +179,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── login/
 │       │   │   └── page.tsx          # 로그인 페이지 (/login) 라우팅 껍데기
 │       │   ├── mypage/               # 🌟 마이페이지 도메인
-│       │   │   └── page.tsx          # 내 투표 기록, 등급 시각화, 운전 MBTI 시각화(Recharts), 비밀번호 변경 화면
+│       │   │   └── page.tsx          # 내 투표 기록, 내가 작성한 글 목록, 운전 MBTI 2.0 시각화, 비밀번호 변경 로직
 │       │   ├── post/
 │       │   │   ├── create/
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
@@ -183,7 +198,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   ├── LoginForm.tsx       # 이메일/비밀번호 입력을 받는 UI
 │       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
-│       │   │       ├── AccidentSketchbook.tsx # Canvas API 기반 드로잉 툴
+│       │   │       ├── AccidentSketchbook.tsx # Canvas API 드로잉 툴 (hasDrawn 상태 및 initialImage 복원 로직 포함)
 │       │   │       ├── CommentSection.tsx  # 사고 원인 분석 댓글 컴포넌트
 │       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
 │       │   │       ├── VideoPlayer.tsx     # 0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어
