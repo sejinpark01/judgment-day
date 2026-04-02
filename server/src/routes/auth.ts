@@ -137,59 +137,73 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req: 
 
 
         // =======================================================
-        // 📊 [Feature G] 운전 MBTI 및 편차(Deviation) 분석 로직 - Ver 2026.03.24
+        // 📊 [Feature G] 운전 MBTI 및 편차(Deviation) 분석 로직 - Ver 2026.04.02
         // =======================================================
         let mbtiData = null;
 
         if (userProfile.votes.length > 0) {
-            // 성능 최적화: 유저가 투표한 모든 게시글 ID 추출
             const postIds = userProfile.votes.map(v => v.post.id);
 
-            // Prisma Aggregate 활용: 해당 게시글들의 '대중 평균 과실(myFault)'을 한 번에 그룹화하여 계산
+            // 해당 게시글들의 '대중 평균 과실(myFault)' 그룹화
             const avgVotes = await prisma.vote.groupBy({
                 by: ['postId'],
                 where: { postId: { in: postIds } },
                 _avg: { myFault: true }
             });
 
-            // 게시글별 평균 매핑
             const avgMap = new Map();
             avgVotes.forEach(item => avgMap.set(item.postId, item._avg.myFault || 50));
 
-            let totalDeviation = 0;
-            let deviations: number[] = [];
+            let matchCount = 0;
+            let myFaultSum = 0;
+            const voteCount = userProfile.votes.length;
 
-            // 1. 유저 투표율과 대중 평균 투표율 간의 편차(Deviation) 계산
+            // 1. 대중 평균과 나의 투표 차이(diff) 계산
             for (const vote of userProfile.votes) {
                 const avgMyFault = avgMap.get(vote.post.id) || 50;
-                // 편차가 양수(+)면 블박차에게 더 가혹함, 음수(-)면 관대함
-                const deviation = vote.myFault - avgMyFault;
-                totalDeviation += deviation;
-                deviations.push(deviation);
+                const diff = Math.abs(vote.myFault - avgMyFault); // 내 투표 - 대중 평균
+
+                // 내 투표가 대중 평균과 20% 이내로 비슷하면 '정답(일치)'으로 인정!
+                if (diff <= 20) matchCount++;
+                myFaultSum += vote.myFault; // 내 투표의 절대적 수치 합
             }
 
-            const avgDeviation = totalDeviation / userProfile.votes.length;
-            // 일관성을 측정하기 위한 분산(Variance) 계산
-            const variance = deviations.reduce((acc, val) => acc + Math.pow(val - avgDeviation, 2), 0) / userProfile.votes.length;
+            const matchRate = matchCount / voteCount;       // 대중과의 일치율 (0.0 ~ 1.0)
+            const myOverallAvg = myFaultSum / voteCount;    // 내 투표의 절대 평균 (높으면 블박 혐오, 낮으면 블박 수호)
 
-            // 2. MBTI 유형 도출
+            // 2. MBTI 유형 도출 (절대 오차 기반의 완벽한 분기)
             let mbtiType = "객관적 솔로몬";
-            if (variance > 500) mbtiType = "예측불허 갈대"; // 일관성이 매우 떨어질 때
-            else if (avgDeviation > 15) mbtiType = "엄격한 심판관"; // 대중보다 블박차 과실을 높게 잡을 때
-            else if (avgDeviation < -15) mbtiType = "블박차 빙의"; // 대중보다 블박차 과실을 낮게 잡을 때
 
-            // 3. 차트 렌더링용 스탯 정규화 (0~100)
-            const strictness = Math.min(100, Math.max(0, 50 + avgDeviation * 1.5));
-            const leniency = Math.min(100, Math.max(0, 50 - avgDeviation * 1.5));
-            const objectivity = Math.min(100, Math.max(0, 100 - Math.abs(avgDeviation) * 2));
-            const consistency = Math.min(100, Math.max(0, 100 - (variance / 15)));
+            if (matchRate >= 0.5) {
+                // 절반 이상 대중과 비슷한 의견을 냈다면 무조건 솔로몬! (억울한 갈대 방지)
+                mbtiType = "객관적 솔로몬";
+            } else {
+                // 대중과 의견이 많이 다른 마이웨이 성향일 때
+                if (myOverallAvg > 65) {
+                    mbtiType = "무자비한 심판관"; // 대중과 안 맞는데 평균적으로 65 이상 때림 (가혹함)
+                } else if (myOverallAvg < 35) {
+                    mbtiType = "맹목적 블박 쉴더"; // 대중과 안 맞는데 평균적으로 35 이하 때림 (관대함)
+                } else {
+                    mbtiType = "청개구리 트롤러"; // 대중과도 안 맞고, 내 평균도 50 언저리 (그때그때 기분따라 찍는 찐 트롤!)
+                }
+            }
+
+            // 3. 차트 렌더링용 스탯 정규화
+            const objectivity = Math.round(matchRate * 100);
+            const strictness = Math.round(myOverallAvg);
+            const leniency = Math.round(100 - myOverallAvg);
+
+            // 일관성: 대중과 잘 맞거나(matchRate 높음), 아니면 확고하게 한쪽으로 패거나(myOverallAvg가 0이나 100에 가까움)
+            let consistency = 0;
+            if (matchRate >= 0.5) consistency = 80 + (matchRate * 20); // 80~100
+            else consistency = Math.abs(myOverallAvg - 50) * 2;        // 50에서 멀어질수록 100에 가까워짐
 
             mbtiData = {
                 type: mbtiType,
                 chartData: [
-                    { subject: '엄격함', value: Math.round(strictness) },
-                    { subject: '객관성', value: Math.round(objectivity) },
-                    { subject: '관대함', value: Math.round(leniency) },
+                    { subject: '엄격함', value: strictness },
+                    { subject: '객관성', value: objectivity },
+                    { subject: '관대함', value: leniency },
                     { subject: '일관성', value: Math.round(consistency) }
                 ]
             };
