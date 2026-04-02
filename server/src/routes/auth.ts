@@ -115,10 +115,17 @@ router.get('/me', passport.authenticate('jwt', { session: false }), async (req: 
                 role: true,
                 createdAt: true,
                 provider: true, // 프론트엔드에서 소셜 유저인지 구분하기 위해 - Ver 2026.03.26
+
+                //  내가 작성한 글 목록(posts)을 최신순으로 가져오도록 명시함 - Ver 2026.04.02
+                posts: {
+                    orderBy: { createdAt: 'desc' }
+                },
+
                 votes: {
                     include: {
                         post: {
-                            select: { id: true, category: true, content: true, views: true, createdAt: true }
+                            // select 항목에 title: true 를 반드시 포함시켜 줌  - Ver 2026.04.02
+                            select: { id: true, category: true, title: true, content: true, views: true, createdAt: true }
                         }
                     },
                     orderBy: { createdAt: 'desc' } // 최신 투표순 정렬
