@@ -11,8 +11,8 @@ import Link from "next/link";
 import { VideoPlayer } from "@/components/features/post/VideoPlayer";
 import { VoteSlider } from "@/components/features/post/VoteSlider"; // ✅ 투표 슬라이더 불러오기 (Ver-2026.03.05)
 import { CommentSection } from "@/components/features/post/CommentSection"; // ✅ 댓글 컴포넌트 임포트 추가 Ver-2026.03.19
-import { Pencil, ArrowLeft, Eye, Calendar, User, Edit, Trash2, Scale } from "lucide-react"; //✅ Edit, Trash2 아이콘 추가함. Ver-2026.03.18 
-
+import { AiJudgeReport } from "@/components/features/post/AiJudgeReport"; // 🚀 신규 임포트 - Ver 2026.04.03
+import { Pencil, ArrowLeft, Eye, Calendar, User, Edit, Trash2, Scale, Bot, Sparkles, Loader2, AlignLeft, Lightbulb } from "lucide-react"; // Ver-2026.04.03 
 
 // 🎨 카테고리별 예쁜 색상 뱃지를 위한 헬퍼 함수 (9개 카테고리 적용) - Ver 2026.03.31
 const getCategoryBadge = (category: string) => {
@@ -111,19 +111,20 @@ export default function PostDetailPage() {
     // 🚀  쇼츠 영상인지 판별 (URL에 'shorts'가 포함되어 있는지 확인) - Ver 2026.03.16
     const isShorts = post.videoUrl.toLowerCase().includes('shorts');
 
+
+
     return (
         // 🚀  max-w-4xl에서 max-w-6xl로 확장하여 양옆 공간 확보
         <div className="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
-
             <Button variant="ghost" onClick={() => router.push('/')} className="mb-6 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors -ml-4">
                 <ArrowLeft className="w-5 h-5 mr-2" /> 돌아가기
             </Button>
 
-            {/* 🚀 Grid 레이아웃 적용 (lg 화면 이상일 때 2:1 비율로 나눔) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 xl:gap-16">
+            {/* 🚀 12-Column Grid 레이아웃 적용  -  Ver 2026.04.03 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 xl:gap-20">
 
-                {/* 👈 왼쪽: 영상 및 본문 영역 (col-span-2) */}
-                <div className="lg:col-span-2 space-y-6">
+                {/* 👈 왼쪽: 영상 및 본문 영역 (col-span-7) - Ver 2026.04.03 */}
+                <div className="lg:col-span-7 space-y-6">
                     <Card className="shadow-xl border-0 ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
                         <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 pb-5">
                             <div className="flex justify-between items-start mb-3">
@@ -145,7 +146,7 @@ export default function PostDetailPage() {
                                 {post.title}
                             </CardTitle>
 
-                            {/* 🚀 수정된 작성자(등급 포함), 날짜, 조회수 영역  Ver-206.03.17 */}
+                            {/* 🚀 수정된 작성자(등급 포함), 날짜, 조회수 영역 - Ver206.03.17 */}
                             <div className="flex flex-wrap items-center gap-4 mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">
                                 <span className="flex items-center text-slate-700 dark:text-slate-300 font-bold">
                                     <User className="w-4 h-4 mr-1.5 text-slate-500" />
@@ -191,20 +192,19 @@ export default function PostDetailPage() {
                                         </div>
                                     </div>
                                 )}
-
                                 {/* 🚀 신규 추가: 사고 원인 분석 댓글 컴포넌트 (관심사 분리 적용) - Ver 2026.03.19 */}
                                 <CommentSection postId={postId} />
-
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* 👉 오른쪽: 투표 UI 영역 (Sticky 속성으로 고정) */}
-                <div className="lg:col-span-1 relative">
+                {/* 👉 오른쪽: 투표 UI & AI 판사 영역 (lg:col-span-5 로 확장!) - Ver 2026.04.03*/}
+                <div className="lg:col-span-5 relative">
                     {/* 🚀  sticky top-24를 통해 스크롤을 내려도 따라다니게 만듦 */}
-                    <div className="sticky top-24 z-10">
-                        {/* 🚀 신규: 투표 활성화 여부에 따른 조건부 렌더링 Ver- 2026.03.20 */}
+                    <div className="sticky top-24 z-10 space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-2 pb-4">
+
+                        {/* 🚀 신규: 투표 활성화 여부에 따른 조건부 렌더링 (투표 슬라이더) Ver- 2026.03.20 */}
                         {post.isVoteEnabled ? (
                             <VoteSlider postId={postId} />
                         ) : (
@@ -218,9 +218,10 @@ export default function PostDetailPage() {
                                 </p>
                             </Card>
                         )}
+                        {/* 🚀 2. AI 판사 토글 컴포넌트 (투표 바로 밑에 부착!) */}
+                        <AiJudgeReport postId={Number(postId)} cachedData={post.aiSummary} />
                     </div>
                 </div>
-
             </div>
         </div >
     );
