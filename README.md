@@ -149,7 +149,7 @@
     
     
 
-## **7. 📂 File structure -** Ver 1.11.0
+## **7. 📂 File structure -** Ver 1.12.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -161,6 +161,7 @@
 - **Dark Mode Integration**: next-themes를 활용한 전역 테마 관리 시스템 도입.
 - **Real-time Architecture**: Socket.io를 확장하여 투표 차트 동기화뿐만 아니라 특정 유저 타겟팅 1:1 실시간 알림(Notification)망 구축 완료.
 - **Security & Infrastructure**: Redis와 express-rate-limit을 결합하여 다중 서버 환경에서도 동기화되는 Brute-force 및 DDoS 방어 미들웨어(Rate Limiting) 계층 구축 완료.
+- **AI Integration**: Gemini 2.5 Flash API를 연동한 객관적인 1차 사고 분석 리포트 컴포넌트(AiJudgeReport) 구조화 및 캐싱 렌더링 완료.
 
 ```text
 my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
@@ -179,7 +180,7 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   ├── login/
 │       │   │   └── page.tsx          # 로그인 페이지 (/login) 라우팅 껍데기
 │       │   ├── mypage/               # 🌟 마이페이지 도메인
-│       │   │   └── page.tsx          # 내 투표 기록, 내가 작성한 글 목록, 운전 MBTI 2.0 시각화, 비밀번호 변경 로직
+│       │   │   └── page.tsx          # 내 투표 기록, 등급 시각화, 운전 MBTI 2.0 시각화, 내가 작성한 글 목록, 비밀번호 변경 화면
 │       │   ├── post/
 │       │   │   ├── create/
 │       │   │   │   └── page.tsx      # 게시글 작성 페이지 (/post/create) 라우팅 껍데기
@@ -198,7 +199,8 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       │   │   │   ├── LoginForm.tsx       # 이메일/비밀번호 입력을 받는 UI
 │       │   │   │   └── SignupForm.tsx      # 이메일/닉네임/비밀번호 입력을 받는 UI
 │       │   │   └── post/
-│       │   │       ├── AccidentSketchbook.tsx # Canvas API 드로잉 툴 (hasDrawn 상태 및 initialImage 복원 로직 포함)
+│       │   │       ├── AiJudgeReport.tsx   # 🤖 (신규) Gemini 2.5 Flash 기반 AI 1차 분석 리포트 및 토글 UI
+│       │   │       ├── AccidentSketchbook.tsx # Canvas API 기반 드로잉 툴(기존 스케치 로드(initialImage) 기능 및 hasDrawn 상태 관리가 추가)
 │       │   │       ├── CommentSection.tsx  # 사고 원인 분석 댓글 컴포넌트
 │       │   │       ├── CreatePostForm.tsx  # 유튜브 URL, 사고 카테고리, 상황 설명을 입력받는 폼 UI
 │       │   │       ├── VideoPlayer.tsx     # 0.1초 단위 제어 및 타이머를 갖춘 커스텀 플레이어
