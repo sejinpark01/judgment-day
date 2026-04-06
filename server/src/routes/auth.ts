@@ -9,6 +9,10 @@ import { loginLimiter } from '../middlewares/rateLimiter'; // Redis로 Rate Limi
 
 const router = Router();
 
+// 상단에 프론트엔드 주소 정의 (isProd 변수는 이미 passport.ts에서 썼던 로직과 동일하게) - Ver 2026.04.07
+const isProd = process.env.NODE_ENV === 'production';
+const FRONTEND_URL = isProd ? 'https://judgment-day.vercel.app' : 'http://localhost:3000';
+
 // 회원가입 API (POST /api/auth/signup)
 router.post('/signup', async (req: Request, res: Response): Promise<any> => {
     try {
@@ -267,7 +271,7 @@ router.get('/kakao/callback', passport.authenticate('kakao', { session: false, f
     const token = jwt.sign({ id: user.id, email: user.email, nickname: user.nickname }, process.env.JWT_SECRET || 'fallback_secret_key', { expiresIn: '24h' });
 
     const userStr = encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, nickname: user.nickname, role: user.role }));
-    res.redirect(`http://localhost:3000/login?token=${token}&user=${userStr}`);
+    res.redirect(`${FRONTEND_URL}/login?token=${token}&user=${userStr}`);
 });
 
 // ====================================================================
@@ -280,7 +284,7 @@ router.get('/google/callback', passport.authenticate('google', { session: false,
     const token = jwt.sign({ id: user.id, email: user.email, nickname: user.nickname }, process.env.JWT_SECRET || 'fallback_secret_key', { expiresIn: '24h' });
 
     const userStr = encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, nickname: user.nickname, role: user.role }));
-    res.redirect(`http://localhost:3000/login?token=${token}&user=${userStr}`);
+    res.redirect(`${FRONTEND_URL}/login?token=${token}&user=${userStr}`);
 });
 
 export default router;
