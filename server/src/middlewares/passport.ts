@@ -6,10 +6,9 @@ import { Strategy as KakaoStrategy } from 'passport-kakao'; // 추가 Ver 2026.0
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'; // 추가 Ver 2026.03.25
 import prisma from '../lib/prisma';
 
-// 0.  Callback URL 설정
-const CALLBACK_URL = process.env.NODE_ENV === 'production'
-  ? 'https://judgment-api.bond'
-  : 'http://localhost:4000';
+// 0. Callback URL 설정 (더 확실한 삼항 연산자 방식)
+const isProd = process.env.NODE_ENV === 'production';
+const BASE_URL = isProd ? 'https://judgment-api.bond' : 'http://localhost:4000';
 
 // 1. JWT 검증 전략
 const jwtOpts = {
@@ -43,7 +42,7 @@ passport.use(
 passport.use(
   new KakaoStrategy({
     clientID: process.env.KAKAO_CLIENT_ID || 'dummy_kakao_id',
-    callbackURL: `${CALLBACK_URL}/api/auth/kakao/callback`,
+    callbackURL: `${BASE_URL}/api/auth/kakao/callback`,
   }, async (accessToken, refreshToken, profile, done) => {
 
     console.log("🚀 [BACKEND] 카카오 로그인 콜백 함수 진입!"); // 로그 추가
@@ -79,7 +78,7 @@ passport.use(
   new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_google_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
-    callbackURL: `${CALLBACK_URL}/api/auth/google/callback`
+    callbackURL: `${BASE_URL}/api/auth/google/callback`
   }, async (accessToken, refreshToken, profile, done) => {
 
     console.log("🚀 [BACKEND] 구글 로그인 콜백 함수 진입!"); // 로그 추가
