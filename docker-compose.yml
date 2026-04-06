@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 1. 우리의 백엔드 서버
+  backend:
+    build: ./server
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=mysql://root:rootpassword@db:3306/traffic_judge
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your_jwt_secret_key
+    depends_on:
+      - db
+      - redis
+
+  # 2. MySQL 데이터베이스 (무료 설치)
+  db:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=traffic_judge
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 3. Redis (무료 설치)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  db_data: # DB 데이터가 날아가지 않게 저장소 파기
