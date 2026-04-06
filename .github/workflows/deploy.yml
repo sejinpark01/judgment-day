@@ -21,16 +21,29 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           source: "server/,docker-compose.yml"
-          target: "/home/ubuntu/my-traffic-judge"
+          target: "/home/ubuntu/judgment-day" # 폴더명 확인 완료
 
       # 2. AWS 서버에 원격 접속해서 예전 도커를 끄고, 최신 코드로 도커를 다시 켭니다!
-      - name: Run Docker Compose on EC2
+      - name: Run Docker on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd /home/ubuntu/my-traffic-judge
-            docker-compose down
-            docker-compose up -d --build
+            cd /home/ubuntu/judgment-day
+            
+            # (1) 낡은 버전의 docker-compose 대신 이미지를 직접 빌드 (노 캐시)
+            sudo docker-compose build --no-cache backend
+            
+            # (2) 기존 컨테이너 강제 종료 및 삭제 (실패해도 무시하도록 || true 붙임)
+            sudo docker rm -f judgment-day_backend_1 || true
+            
+            # (3) 성공했던 그 명령어 그대로 다시 띄우기
+            sudo docker run -d \
+              --name judgment-day_backend_1 \
+              --network judgment-day_default \
+              -p 4000:4000 \
+              -e NODE_ENV=production \
+              -v /home/ubuntu/judgment-day/server/.env:/app/.env \
+              judgment-day_backend:latest
