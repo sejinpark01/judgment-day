@@ -2,6 +2,7 @@
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider"; // ✅ 추가
 import { Navbar } from "@/components/Navbar"; // ✅ Navbar 임포트 - Ver 2026.03.20
 import { Analytics } from "@vercel/analytics/next"  // Vercel 웹분석 추가 - Ver 2026.04.06
