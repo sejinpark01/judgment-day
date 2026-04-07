@@ -38,9 +38,12 @@ export function Navbar() {
     // 🚀 커스텀 훅으로 실시간 알림 데이터 연결 (user.id를 넘겨서 내 Room에만 입장) - Ver 2026.03.24
     const { notifications, markAsRead } = useSocketNotification(user?.id || null);
 
-    // 로그아웃 함수
-    const handleLogout = () => {
+    // 로그아웃 함수 - Ver 2026.04.07
+   const handleLogout = () => {
         if (confirm('정말로 로그아웃 하시겠습니까?')) {
+            // 0. 유저의 가입 방식(provider) 확인 (local, kakao, google 등)
+            const currentProvider = user?.provider;
+
             // 1. 내 브라우저(로컬 스토리지)에 있는 토큰과 유저 정보 삭제
             localStorage.removeItem('token');
             localStorage.removeItem('user');
@@ -49,11 +52,19 @@ export function Navbar() {
 
             alert('성공적으로 로그아웃 되었습니다.');
 
-            // 2. 카카오 계정 세션 삭제 요청 후 프론트 메인으로 돌아오기 - Ver 2026.03.26
-            const KAKAO_CLIENT_ID = "bab66edf10f61b5ad88ce20eca1ab5e1"; // 아까 발급받은 REST API 키
-            const LOGOUT_REDIRECT_URI = "http://localhost:3000"; // 1단계에서 카카오에 등록한 돌아올 주소
+            // 🚀 핵심: '현재 접속 중인 도메인'을 자동으로 가져옴 
+            // (로컬에선 http://localhost:3000, 배포 서버에선 https://실제도메인)
+            const currentOrigin = window.location.origin;
 
-            window.location.href = `https://kauth.kakao.com/oauth/logout?client_id=${KAKAO_CLIENT_ID}&logout_redirect_uri=${LOGOUT_REDIRECT_URI}`;
+            // 2. 가입 방식에 따른 리다이렉트 분기 처리
+            if (currentProvider === 'kakao') {
+                const KAKAO_CLIENT_ID = "bab66edf10f61b5ad88ce20eca1ab5e1";
+                // 카카오 유저는 카카오 세션도 함께 날려줍니다.
+                window.location.href = `https://kauth.kakao.com/oauth/logout?client_id=${KAKAO_CLIENT_ID}&logout_redirect_uri=${currentOrigin}`;
+            } else {
+                // 일반 로컬 가입자나 구글 가입자는 복잡한 과정 없이 바로 현재 도메인의 메인으로 이동
+                window.location.href = currentOrigin;
+            }
         }
     };
 
