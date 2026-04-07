@@ -23,7 +23,7 @@
 | Styling | **Tailwind CSS**, shadcn/ui, Lucide Icons |
 | Core APIs | YouTube Iframe API (seekTo, getCurrentTime, playVideo), HTML5 Canvas API (getContext('2d')) |
 | Libraries | react-youtube, lucide-react , next-themes |
-| DevOps & Infra | **Docker (Redis Container)**, AWS EC2 (Planned), Github Actions |
+| DevOps & Infra | **Vercel** (Frontend), **AWS EC2** (Backend), **Docker / Docker Compose**, **GitHub Actions (CI/CD)** |
 
 ## 3. Core Features (MVP)
 
@@ -107,6 +107,13 @@
     - 마이페이지 12-Column Grid 시스템(`grid-cols-12`) 및 내부 스크롤 적용으로 방대한 데이터 렌더링 최적화.
     - 사고 스케치북(`AccidentSketchbook`)에 `hasDrawn` 상태를 도입하여, 미사용 시 투명 배경(`null`) 반환 및 `initialImage`를 통한 기존 캔버스 데이터 복원 로직 고도화.       
 
+### M: 🚀 클라우드 운영 환경 및 CI/CD 자동화 파이프라인 (DevOps)
+- **User Story:** "로컬 환경을 넘어, 실제 유저들이 안정적으로 접속할 수 있는 운영 서버를 구축하고 싶다."
+- **Tech Spec:**
+    - **Frontend (Vercel):** Next.js의 SSR 및 이미지 최적화 기능을 극대화하기 위해 Vercel 플랫폼에 배포.
+    - **Backend (AWS EC2 + Docker):** 24시간 실시간 소켓 통신 유지를 위해 AWS EC2 Ubuntu 서버 도입. `docker-compose.yml`을 작성하여 Node.js 서버, MySQL, Redis를 독립된 컨테이너로 격리 배포하여 환경 일관성 및 관리 효율성 증대.
+    - **CI/CD (GitHub Actions):** GitHub main 브랜치에 코드가 push 되면 GitHub Actions가 이를 감지하여, EC2 서버에 접속 후 최신 코드를 pull 받고 Docker 컨테이너를 재시작하는 무중단 배포 파이프라인 구축 완료.
+
 ## 4. Coding Rules & Guidelines
 ### General Principles
 - **KISS:** 과도한 추상화 지양, 명확한 코드 작성
@@ -134,7 +141,7 @@
 - [x] **Phase 3:** 영상 제어 & 실시간 투표 (Socket.io)
 - [x] **Phase 4:** 캔버스 드로잉 & Redis 캐싱 & 운전자 등급(Tier) 시스템
 - [x] **Phase 5: Polish & UI/UX** (히어로 배너, 카드 호버, 카테고리 뱃지, 다크모드 시스템 구축)
-- [ ] **Phase 6: Feature Enhancement & Stabilization**
+- [x] **Phase 6: Feature Enhancement & Stabilization**
     - **인터페이스 최적화:** UI 플로팅(Sticky) 적용 및 쇼츠 영상 뷰 최적화
     - **UX 고도화:** 메인 페이지 카테고리(6대 사고 유형) 필터링 및 정렬(최신/인기순) 추가
     - **데이터 동기화:** 실시간 조회수 및 작성자 닉네임(User.nickname) 연동
@@ -144,12 +151,40 @@
     - **UX/UI 정규화:** 게시글 작성/수정 폼 렌더링 일관성 확보 및 다크모드 툴팁 시인성 개선
     - **운전 MBTI 2.0:** 대중 일치율(Match Rate)과 절대 성향(Bias)을 교차 검증하는 알고리즘 전면 개편 및 12-Grid 대시보드 구축 (내가 작성한 글 목록 추가)
     - **특화 기능 (AI, 타사인증, 보안):** AI 판사(Gemini 2.5 Flash) 캐싱 연동, OAuth 소셜 로그인(카카오/구글), Redis Rate Limit 보안 방어망 구축 완료.
-- [ ] **Phase 7: Deploy**
-    - **인프라 및 배포:** GitHub Actions 기반 CI/CD 자동화 배포 파이프라인 구축 및 AWS EC2 + 클라우드 DB 연동
-    
+- [x] **Phase 7: Deploy (클라우드 배포 및 CI/CD)**
+    - **인프라 및 배포:** GitHub Actions 기반 CI/CD 자동화 배포 파이프라인 구축 완료. 
+    - **아키텍처 분리:** 프론트엔드(Vercel)와 백엔드(AWS EC2 + Docker Compose 기반 MySQL/Redis) 연동 및 배포 완료.
+
+## 7. 📡 API 명세서 (API Specification)
+> 주요 도메인별 RESTful API 설계 및 핵심 인프라 로직 (보안, 캐싱, 소켓 등)
+
+| 도메인 | 메서드 | URI | 기능 설명 | 인증 필요 | 특이사항 (어필 포인트) |
+| :--- | :---: | :--- | :--- | :---: | :--- |
+| **Auth** | `POST` | `/api/auth/signup` | 로컬 회원가입 | ❌ | 비밀번호 단방향 암호화(bcrypt) |
+| **Auth** | `POST` | `/api/auth/login` | 로컬 로그인 및 JWT 발급 | ❌ | **Redis 기반 요청 제한 (Brute-force 방어)** |
+| **Auth** | `GET` | `/api/auth/me` | 내 프로필, 작성글 및 **운전 성향 분석(MBTI)** 조회 | ⭕️ | JWT 기반 식별 및 조인 쿼리 |
+| **Auth** | `PUT` | `/api/auth/password` | 비밀번호 변경 | ⭕️ | 소셜 계정 방어 로직 적용 |
+| **Auth** | `GET` | `/api/auth/kakao` | 카카오 소셜 로그인 진입 | ❌ | OAuth 2.0 |
+| **Auth** | `GET` | `/api/auth/google` | 구글 소셜 로그인 진입 | ❌ | OAuth 2.0 |
+| **Post** | `GET` | `/api/posts` | 게시글 목록 조회 (페이지네이션) | ❌ | **Redis 기반 캐싱 (응답 속도 최적화)** |
+| **Post** | `POST` | `/api/posts` | 신규 게시글 작성 | ⭕️ | |
+| **Post** | `GET` | `/api/posts/:id` | 게시글 상세 조회 (조회수 증가) | ❌ | |
+| **Post** | `PUT` | `/api/posts/:id` | 작성자 본인 게시글 수정 | ⭕️ | 본인 권한 검증 철저 |
+| **Post** | `DELETE` | `/api/posts/:id` | 게시글 삭제 | ⭕️ | **트랜잭션(댓글/투표 동시 안전 삭제)** |
+| **Post** | `GET` | `/api/posts/:id/stats`| 게시글 투표 통계(찬/반 평균) 조회 | ❌ | |
+| **Post** | `POST` | `/api/posts/:id/vote` | 투표 등록 및 **유저 자동 승급 처리** | ⭕️ | **Redis 기반 도배 방어 / 실시간 소켓 브로드캐스트** |
+| **Post** | `POST` | `/api/posts/:id/ai-analyze`| Gemini 2.5 기반 사고 상황 객관적 분석 | ❌ | 프롬프트 동적 분기 / DB 영구 캐싱 방어 |
+| **Comment**| `GET` | `/api/posts/:id/comments` | 특정 게시글의 댓글 목록 최신순 조회 | ❌ | |
+| **Comment**| `POST`| `/api/posts/:id/comments` | 댓글 작성 | ⭕️ | 작성 성공 시 원작자에게 **Socket.io 실시간 알림** 발송 |
+| **Comment**| `DELETE`| `/api/posts/:id/comments/:commentId` | 본인이 작성한 댓글 삭제 | ⭕️ | |
+| **Noti** | `GET` | `/api/notifications` | 나에게 온 안 읽은 실시간 알림 20개 조회 | ⭕️ | |
+| **Noti** | `PUT` | `/api/notifications/:id/read` | 특정 알림 읽음 처리 | ⭕️ | |
+| **System** | `GET` | `/api/test` | 서버 상태 확인용 (Health Check) | ❌ | |
+
+*(⭕️ 인증 필요 항목은 요청 헤더에 `Authorization: Bearer <JWT Token>`을 포함해야 합니다.)*    
     
 
-## **7. 📂 File structure -** Ver 1.12.0
+## **8. 📂 File structure -** Ver 1.12.0
 
 **주요 특징:** **Monorepo Structure**: 프론트엔드와 백엔드가 분리된 구조 확립.
 
@@ -240,3 +275,4 @@ my-traffic-judge/                     # 프로젝트 최상위 루트 폴더
 │       ├── notification.ts    # 🌟 (신규) 안 읽은 알림 조회 및 읽음 처리 API 라우터
 │       └── post.ts            # 게시글 및 댓글(Comment) CRUD API 라우터 (Passport, Redis, 🌟Socket Emit, 🛡️ Rate Limiting 적용)
 └── node_modules/
+
