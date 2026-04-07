@@ -118,6 +118,13 @@ export function AiJudgeReport({ postId, cachedData }: AiJudgeReportProps) {
                                         <p className="text-sm text-indigo-900 dark:text-indigo-200 leading-relaxed">{aiData.adviceForWriter}</p>
                                     </div>
                                 </div>
+
+                                {/* 🚀 면책 조항 추가 */}
+                                <div className="mt-6 pt-5 border-t border-indigo-100 dark:border-indigo-900/50 text-center">
+                                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                        ※ 본 분석은 AI(Gemini)에 의한 참고용 데이터이며 법적 효력이 없습니다.
+                                    </p>
+                                </div>
                             </div>
                         )}
                     </CardContent>
