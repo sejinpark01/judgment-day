@@ -32,4 +32,6 @@ services:
       - "6379:6379"
 
 volumes:
-  db_data: # DB 데이터가 날아가지 않게 저장소 파기
+  db_data:
+    external: true
+    name: my-traffic-judge_db_data
