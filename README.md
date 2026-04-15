@@ -2,7 +2,7 @@
 > **"당신의 과실은 몇 대 몇입니까?"**
 > 실시간 상호작용과 집단지성을 활용한 교통사고 과실 비율 투표 플랫폼
 
-![Project Status](https://img.shields.io/badge/Status-In%20Progress-orange?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
+![Project Status](https://img.shields.io/badge/Status-Completed-green?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 ## 1. Project Overview
 - **Goal:** Next.js, Node.js, Socket.io를 활용하여 실시간 상호작용이 가능한 투표 플랫폼 구축
@@ -154,6 +154,7 @@
 - [x] **Phase 7: Deploy (클라우드 배포 및 CI/CD)**
     - **인프라 및 배포:** GitHub Actions 기반 CI/CD 자동화 배포 파이프라인 구축 완료. 
     - **아키텍처 분리:** 프론트엔드(Vercel)와 백엔드(AWS EC2 + Docker Compose 기반 MySQL/Redis) 연동 및 배포 완료.
+- [x] **Phase 8:** 성능(부하) 및 보안(방어) 테스트
 
 ## 7. 📡 API 명세서 (API Specification)
 > 주요 도메인별 RESTful API 설계 및 핵심 인프라 로직 (보안, 캐싱, 소켓 등)

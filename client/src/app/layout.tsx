@@ -13,6 +13,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "심판의 날",
   description: "교통사고 과실 비율 투표 플랫폼",
+  // ⚖️ 이모지를 아이콘으로 설정하는 부분 추가
+  icons: {
+    icon: `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>`,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
